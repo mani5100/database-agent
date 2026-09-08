@@ -1,0 +1,27 @@
+services:
+  test-postgres:
+    image: postgres:16
+    container_name: database-agent-test-postgres
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: test123
+      POSTGRES_DB: testdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./test-data/postgres-seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    restart: unless-stopped
+
+  test-mysql:
+    image: mysql:8
+    container_name: database-agent-test-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: test123
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: test123
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./test-data/mysql-seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    restart: unless-stopped

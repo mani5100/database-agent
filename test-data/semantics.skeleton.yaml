@@ -1,0 +1,85 @@
+# Semantic layer skeleton for the LangGraph Database Agent internship.
+# Copy to: backend/configs/semantics.yaml
+#
+# Rules:
+# - name / column name  = business names (UI + agent)
+# - physical_name       = real table/column in Postgres, MySQL, or SQLite file source
+# - source              = connector source id
+# - metrics.expression  = use BUSINESS names (orders.revenue), not physical (amt)
+# - Fill descriptions before Deploy (Qdrant indexing)
+
+version: 1
+
+models:
+  - name: customers
+    source: warehouse
+    physical_name: customers
+    description: "People or companies who place orders"
+    synonyms: ["clients", "accounts"]
+    columns:
+      - name: id
+        physical_name: id
+        description: "Customer primary key"
+        synonyms: []
+      - name: name
+        physical_name: display_name
+        description: "Customer display name"
+        synonyms: ["client name", "account name"]
+
+  - name: orders
+    source: orders_file
+    physical_name: orders
+    description: "One row per purchase order"
+    synonyms: ["purchases"]
+    columns:
+      - name: id
+        physical_name: id
+        description: "Order primary key"
+        synonyms: ["order id"]
+      - name: customer_id
+        physical_name: customer_id
+        description: "Foreign key to customers.id"
+        synonyms: []
+      - name: revenue
+        physical_name: amt
+        description: "Order total before tax (USD)"
+        synonyms: ["amount", "sales amount"]
+      - name: ordered_at
+        physical_name: ts
+        description: "Order timestamp (UTC)"
+        synonyms: ["order date", "purchase date"]
+
+relationships:
+  - name: orders_to_customers
+    from_model: orders
+    from_column: customer_id
+    to_model: customers
+    to_column: id
+    type: many_to_one
+    description: "Each order belongs to one customer"
+
+# Approved KPIs — agent must prefer these formulas instead of inventing them.
+metrics:
+  - name: total_revenue
+    label: "Total revenue"
+    description: "Sum of order revenue before tax"
+    model: orders
+    expression: "SUM(orders.revenue)"
+    synonyms: ["sales", "gmv", "total sales"]
+    # optional stretch fields:
+    # requires_models: [orders]
+    # time_column: ordered_at
+
+  - name: order_count
+    label: "Order count"
+    description: "Number of orders"
+    model: orders
+    expression: "COUNT(orders.id)"
+    synonyms: ["number of orders", "orders count"]
+
+  - name: average_order_value
+    label: "Average order value"
+    description: "Average revenue per order"
+    model: orders
+    expression: "AVG(orders.revenue)"
+    synonyms: ["aov", "avg order value"]
