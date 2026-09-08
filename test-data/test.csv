@@ -1,4 +1,4 @@
-name,age,city,department,salary,joined_date,is_active
+name,age,em_city,nx_department,em_salary,joined_date,is_active
 Ali,28,Lahore,Engineering,85000,2021-03-15,true
 Sara,34,Karachi,Marketing,72000,2019-07-01,true
 Bilal,22,Islamabad,Engineering,65000,2023-01-10,true
