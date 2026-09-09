@@ -1,0 +1,53 @@
+/* frontend/src/index.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --color-bg: #F9FAFA;
+  --color-surface: #FFFFFF;
+  --color-ink: #14171A;
+  --color-muted: #6B7280;
+  --color-border: #E4E7EA;
+  --color-accent: #0E7C7B;
+  --color-accent-hover: #0B6362;
+  --color-error: #DC2626;
+  --color-error-bg: #FEF2F2;
+
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  --radius: 6px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+code, .mono {
+  font-family: var(--font-mono);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+#root {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
