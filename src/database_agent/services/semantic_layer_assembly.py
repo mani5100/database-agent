@@ -105,4 +105,4 @@ async def assemble_semantic_layer_yaml(
     with output_path.open("w", encoding="utf-8") as f:
         yaml.safe_dump(document, f, sort_keys=False, allow_unicode=True)
 
-    return str(output_path)
+    return str(output_path), models

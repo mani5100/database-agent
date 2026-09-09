@@ -1,7 +1,0 @@
-version: 1
-models:
-- name: customers
-  source: postgres
-  physical_name: customers
-  description: The **customers** table stores a unique identifier for each customer
-    and the 

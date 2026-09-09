@@ -36,3 +36,4 @@ class AssembleYamlRequest(BaseModel):
 class AssembleYamlResponse(BaseModel):
     session_id: str
     file_path: str
+    indexed_points: int

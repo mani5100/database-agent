@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "gpt-oss:latest"
 
+
+    qdrant_url: str = "http://localhost:6333"
+    qdrant_collection_name: str = "semantic_layer_columns"
+
+    # --- Ollama embeddings ---
+    ollama_embedding_model: str = "nomic-embed-text:latest"
+    
+    
     # --- Allowed source types (used for request validation) ---
     allowed_source_types: tuple[str, ...] = (
         "postgres",

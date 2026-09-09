@@ -8,6 +8,7 @@ from database_agent.models.semantic_layer import (
     TableDetailResponse,
     TableNamesResponse,
 )
+from database_agent.services.semantic_layer_indexing import index_semantic_layer
 from database_agent.services.semantic_layer_assembly import assemble_semantic_layer_yaml
 from database_agent.services.semantic_naming_service import (
     generate_table_details,
@@ -106,7 +107,7 @@ async def assemble_semantic_layer_route(
     schema_info = await connector.extract_schema()
 
     try:
-        file_path = await assemble_semantic_layer_yaml(
+        file_path, models = await assemble_semantic_layer_yaml(
             session_id=session_id,
             connector=connector,
             schema_info=schema_info,
@@ -115,4 +116,8 @@ async def assemble_semantic_layer_route(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
-    return AssembleYamlResponse(session_id=session_id, file_path=file_path)
+    indexed_points = await index_semantic_layer(session_id, models)
+
+    return AssembleYamlResponse(
+        session_id=session_id, file_path=file_path, indexed_points=indexed_points
+    )

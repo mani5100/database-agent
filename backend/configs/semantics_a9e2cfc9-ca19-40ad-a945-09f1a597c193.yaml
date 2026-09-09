@@ -1,0 +1,75 @@
+version: 1
+models:
+- name: customers
+  source: postgres
+  physical_name: customers
+  description: The **customers** table stores records of customer entities, each identified
+    by a unique integer ID and represented by a human‑readable display name.
+  synonyms:
+  - clients
+  - patrons
+  - buyers
+  - account holders
+  columns:
+  - name: id
+    physical_name: id
+    description: A system‑generated integer that uniquely identifies each customer
+      record.
+    synonyms:
+    - Customer ID
+    - Primary Key
+    - Identifier
+  - name: display_name
+    physical_name: display_name
+    description: The human‑readable name shown to users for the customer entity.
+    synonyms:
+    - Customer Name
+    - Company Name
+    - Client Name
+    - Business Name
+- name: orders
+  source: postgres
+  physical_name: orders
+  description: The **orders** table captures each purchase transaction made by a customer.
+    It stores the unique order identifier, links the order to its buyer, records the
+    monetary value of the sale, and notes when the order was placed.
+  synonyms:
+  - Purchase Orders
+  - Sales Orders
+  - Transaction Records
+  columns:
+  - name: order_id
+    physical_name: id
+    description: A system‑generated unique identifier for each individual order.
+    synonyms:
+    - Order Number
+    - Order Key
+  - name: customer_id
+    physical_name: customer_id
+    description: The identifier of the customer who placed the order, linking to the
+      customers table.
+    synonyms:
+    - Client ID
+    - Buyer ID
+  - name: amount
+    physical_name: amt
+    description: The total monetary value of the order in the store’s currency.
+    synonyms:
+    - Total
+    - Order Value
+    - Transaction Amount
+  - name: timestamp
+    physical_name: ts
+    description: The date and time when the order was created or recorded in the system.
+    synonyms:
+    - Order Time
+    - Created At
+    - Order DateTime
+relationships:
+- name: orders_to_customers
+  from_model: orders
+  from_column: customer_id
+  to_model: customers
+  to_column: id
+  type: many_to_one
+  description: Each orders belongs to one customers
