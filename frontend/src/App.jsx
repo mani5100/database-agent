@@ -6,6 +6,7 @@ import TableSelectionPage from "./pages/TableSelectionPage";
 import ReviewPage from "./pages/ReviewPage";
 import AskPage from "./pages/AskPage";
 import StepIndicator from "./components/StepIndicator";
+import ConnectionsPage from "./pages/ConnectionsPage";
 
 function App() {
   const currentStep = useSessionStore((state) => state.currentStep);
@@ -17,6 +18,7 @@ function App() {
       {currentStep === "select" && <TableSelectionPage />}
       {currentStep === "review" && <ReviewPage />}
       {currentStep === "ask" && <AskPage />}
+      {currentStep === "connections" && <ConnectionsPage />}
     </div>
   );
 }

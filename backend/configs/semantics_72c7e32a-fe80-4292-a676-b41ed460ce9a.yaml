@@ -1,0 +1,137 @@
+version: 1
+models:
+- name: employee_details
+  source: excel
+  physical_name: sheet_Sheet1
+  description: 'The **employee_details** table stores basic demographic and employment
+    information for each staff member in the organization.
+
+
+    It includes personal identifiers (name, age, city), job‑related data (department,
+    salary, joined_date) and a flag indicating whether the employee is currently active.'
+  synonyms:
+  - employee_records
+  - staff_info
+  - personnel_details
+  columns:
+  - name: name
+    physical_name: name
+    physical_type: text
+    is_primary_key: false
+    description: The full legal name of the employee.
+    synonyms:
+    - Full Name
+    - Employee Name
+  - name: age
+    physical_name: age
+    physical_type: float
+    is_primary_key: false
+    description: The employee’s age in years, expressed as a floating‑point number.
+    synonyms:
+    - Years Old
+    - Employee Age
+  - name: city
+    physical_name: city
+    physical_type: text
+    is_primary_key: false
+    description: The city where the employee is based or resides.
+    synonyms:
+    - Location City
+    - Work City
+  - name: department
+    physical_name: department
+    physical_type: text
+    is_primary_key: false
+    description: The organizational unit or team to which the employee belongs.
+    synonyms:
+    - Division
+    - Team
+  - name: salary
+    physical_name: salary
+    physical_type: float
+    is_primary_key: false
+    description: The employee’s annual compensation in monetary units, stored as a
+      floating‑point number.
+    synonyms:
+    - Annual Pay
+    - Compensation
+  - name: date_joined
+    physical_name: joined_date
+    physical_type: text
+    is_primary_key: false
+    description: The calendar date on which the employee started working for the company,
+      formatted as a string (YYYY-MM-DD).
+    synonyms:
+    - Hire Date
+    - Start Date
+  - name: active_status
+    physical_name: is_active
+    physical_type: boolean
+    is_primary_key: false
+    description: A Boolean flag indicating whether the employee is currently employed
+      (True) or not (False).
+    synonyms:
+    - Employment Status
+    - Current Employee
+- name: performance_reviews
+  source: excel
+  physical_name: sheet_Performance_Review
+  description: The **performance_reviews** table captures key metrics from each employee’s
+    annual review, recording their name, how many projects they finished, the rating
+    they received, when the last review took place, and the percentage of a performance‑based
+    bonus awarded.
+  synonyms:
+  - performance evaluations
+  - review records
+  - employee assessments
+  columns:
+  - name: name
+    physical_name: name
+    physical_type: text
+    is_primary_key: false
+    description: The employee’s full name as recorded in the organization’s personnel
+      system.
+    synonyms:
+    - employee_name
+    - staff_name
+    - personnel_name
+  - name: projects_completed
+    physical_name: projects_completed
+    physical_type: float
+    is_primary_key: false
+    description: Total number of projects the employee completed during the review
+      period.
+    synonyms:
+    - completed_projects
+    - finished_projects
+    - project_count
+  - name: performance_rating
+    physical_name: performance_rating
+    physical_type: float
+    is_primary_key: false
+    description: Numerical score assigned to the employee’s overall performance for
+      the period.
+    synonyms:
+    - rating_score
+    - evaluation_score
+    - performance_score
+  - name: last_review_date
+    physical_name: last_review_date
+    physical_type: text
+    is_primary_key: false
+    description: Date on which the most recent performance review was conducted.
+    synonyms:
+    - review_date
+    - assessment_date
+    - last_evaluation_date
+  - name: bonus_percent
+    physical_name: bonus_percent
+    physical_type: float
+    is_primary_key: false
+    description: Percentage of the employee’s base salary awarded as a bonus based
+      on their performance rating.
+    synonyms:
+    - bonus_percentage
+    - incentive_rate
+    - reward_percent
+relationships: []

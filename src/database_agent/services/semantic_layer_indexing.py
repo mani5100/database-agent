@@ -56,6 +56,7 @@ async def index_semantic_layer(session_id: str, models: list[dict]) -> int:
                     "table_physical_name": model["physical_name"],
                     "column_business_name": column["name"],
                     "column_physical_name": column["physical_name"],
+                    "column_physical_type": column["physical_type"],
                     "column_description": column["description"],
                     "column_synonyms": column["synonyms"],
                     "table_description": model["description"],

@@ -31,6 +31,17 @@ export const useSessionStore = create((set) => ({
   setConnection: (sessionId, sourceType) =>
     set({ sessionId, sourceType, currentStep: "select" }),
 
+  setActiveSession: (sessionId, sourceType) =>
+    set({
+      sessionId,
+      sourceType,
+      tableNames: {},
+      selectedTables: [],
+      tableDetails: {},
+      semanticLayerFilePath: null,
+      indexedPoints: null,
+    }),
+    
   setTableNames: (tableNames) => set({ tableNames }),
 
   toggleTableSelection: (physicalName) =>

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from database_agent.api.routes import csv, excel, google_sheets, mysql, postgres, semantic_layer, session
+from database_agent.api.routes import csv, erd, excel, google_sheets, mysql, postgres, semantic_layer, session, agent
 
 router = APIRouter()
 router.include_router(postgres.router, tags=["connections"])
@@ -12,3 +12,5 @@ router.include_router(excel.router, tags=["connections"])
 router.include_router(google_sheets.router, tags=["connections"])
 router.include_router(session.router, tags=["sessions"])
 router.include_router(semantic_layer.router, tags=["semantic_layer"])
+router.include_router(agent.router, tags=["agent"])
+router.include_router(erd.router, tags=["erd"])

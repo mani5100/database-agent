@@ -26,6 +26,7 @@ function ConnectPage() {
   const [file, setFile] = useState(null);
 
   const setConnection = useSessionStore((state) => state.setConnection);
+  const goToStep = useSessionStore((state) => state.goToStep);  
 
   function updateField(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -80,6 +81,22 @@ function ConnectPage() {
       <p style={{ color: "var(--color-muted)", marginBottom: 32 }}>
         Choose where your data lives.
       </p>
+
+
+      <button
+        onClick={() => goToStep("connections")}
+        style={{
+          marginBottom: 20,
+          padding: "6px 12px",
+          borderRadius: "var(--radius)",
+          border: "1px solid var(--color-border)",
+          background: "var(--color-surface)",
+          color: "var(--color-muted)",
+          fontSize: 13,
+        }}
+      >
+        Switch to an existing connection
+      </button>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
         {SOURCE_TYPES.map((type) => (

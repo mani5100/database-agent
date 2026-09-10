@@ -164,3 +164,9 @@ class PostgresConnector(BaseConnector):
                 limit,
             )
         return [dict(row) for row in rows]
+    
+    async def execute_query(self, sql: str) -> list[dict]:
+        assert self.pool is not None, "connect() must be called before execute_query()"
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(sql)
+        return [dict(row) for row in rows]

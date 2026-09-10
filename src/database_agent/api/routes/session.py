@@ -9,6 +9,9 @@ from database_agent.sessions.connection_registry import (
     SessionNotFoundError,
 )
 
+from database_agent.models.session import SessionListResponse, SessionSummary
+from database_agent.sessions.metadata_store import metadata_store
+
 router = APIRouter()
 
 
@@ -27,3 +30,10 @@ async def get_session_schema(session_id: str) -> ConnectionResponse:
 async def close_session(session_id: str) -> dict:
     await connection_registry.close(session_id)
     return {"status": "closed", "session_id": session_id}
+
+@router.get("/sessions", response_model=SessionListResponse)
+async def list_sessions() -> SessionListResponse:
+    sessions = await metadata_store.list_sessions()
+    return SessionListResponse(
+        sessions=[SessionSummary(**s) for s in sessions]
+    )

@@ -1,0 +1,73 @@
+version: 1
+models:
+- name: employees
+  source: csv
+  physical_name: data
+  description: The **employees** table stores core personnel information, including
+    personal details, employment location, department affiliation, compensation, hire
+    date, and current activity status. It serves as the primary reference for HR analytics,
+    payroll processing, and workforce planning.
+  synonyms:
+  - Employee Records
+  - Staff List
+  - Personnel Data
+  columns:
+  - name: employee_name
+    physical_name: name
+    physical_type: text
+    is_primary_key: false
+    description: The full legal name of the employee.
+    synonyms:
+    - Full Name
+    - Name
+  - name: age
+    physical_name: age
+    physical_type: integer
+    is_primary_key: false
+    description: The employee’s age in years, calculated from their birth date.
+    synonyms:
+    - Years Old
+    - Current Age
+  - name: employment_city
+    physical_name: em_city
+    physical_type: text
+    is_primary_key: false
+    description: The city where the employee is based or works.
+    synonyms:
+    - Work City
+    - Office Location
+  - name: department
+    physical_name: nx_department
+    physical_type: text
+    is_primary_key: false
+    description: The organizational department to which the employee belongs.
+    synonyms:
+    - Division
+    - Team
+  - name: salary
+    physical_name: em_salary
+    physical_type: integer
+    is_primary_key: false
+    description: Annual base salary paid to the employee, expressed in local currency
+      units.
+    synonyms:
+    - Compensation
+    - Pay
+  - name: date_joined
+    physical_name: joined_date
+    physical_type: date
+    is_primary_key: false
+    description: The calendar date on which the employee commenced employment.
+    synonyms:
+    - Hire Date
+    - Start Date
+  - name: active_status
+    physical_name: is_active
+    physical_type: boolean
+    is_primary_key: false
+    description: Boolean flag indicating whether the employee is currently active
+      in the organization.
+    synonyms:
+    - Employment Status
+    - Current Employee
+relationships: []

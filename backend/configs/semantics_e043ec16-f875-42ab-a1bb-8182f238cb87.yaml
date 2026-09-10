@@ -14,6 +14,7 @@ models:
   - name: id
     physical_name: id
     physical_type: integer
+    is_primary_key: true
     description: A system‑generated integer that uniquely identifies each customer
       record.
     synonyms:
@@ -23,6 +24,7 @@ models:
   - name: display_name
     physical_name: display_name
     physical_type: text
+    is_primary_key: false
     description: The human‑readable name shown to users for the customer entity.
     synonyms:
     - Customer Name
@@ -43,6 +45,7 @@ models:
   - name: order_id
     physical_name: id
     physical_type: integer
+    is_primary_key: true
     description: A system‑generated unique identifier for each individual order.
     synonyms:
     - Order Number
@@ -50,6 +53,7 @@ models:
   - name: customer_id
     physical_name: customer_id
     physical_type: integer
+    is_primary_key: false
     description: The identifier of the customer who placed the order, linking to the
       customers table.
     synonyms:
@@ -58,6 +62,7 @@ models:
   - name: amount
     physical_name: amt
     physical_type: float
+    is_primary_key: false
     description: The total monetary value of the order in the store’s currency.
     synonyms:
     - Total
@@ -66,6 +71,7 @@ models:
   - name: timestamp
     physical_name: ts
     physical_type: datetime
+    is_primary_key: false
     description: The date and time when the order was created or recorded in the system.
     synonyms:
     - Order Time

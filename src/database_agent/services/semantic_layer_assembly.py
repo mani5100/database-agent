@@ -58,6 +58,11 @@ async def assemble_semantic_layer_yaml(
             {
                 "name": col.business_name,
                 "physical_name": col.physical_name,
+                "physical_type": column_type_by_name.get(col.physical_name, "text"),
+                "is_primary_key": next(
+                    (c.is_primary_key for c in table_info.columns if c.name == col.physical_name),
+                    False,
+                ),
                 "description": col.description,
                 "synonyms": col.synonyms,
             }

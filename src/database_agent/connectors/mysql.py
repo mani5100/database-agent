@@ -162,8 +162,18 @@ class MySQLConnector(BaseConnector):
     async def get_sample_rows(self, table_name: str, limit: int = 2) -> list[dict]:
         assert self.pool is not None, "connect() must be called before get_sample_rows()"
         async with self.pool.acquire() as conn:
-            rows = await conn.fetch(
-                f'SELECT * FROM "{self.schema}"."{table_name}" LIMIT $1',
-                limit,
-            )
-        return [dict(row) for row in rows]
+            async with conn.cursor(aiomysql.DictCursor) as cur:
+                await cur.execute(
+                    f"SELECT * FROM `{table_name}` LIMIT %s",
+                    (limit,),
+                )
+                rows = await cur.fetchall()
+        return list(rows)
+    
+    async def execute_query(self, sql: str) -> list[dict]:
+        assert self.pool is not None, "connect() must be called before execute_query()"
+        async with self.pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cur:
+                await cur.execute(sql)
+                rows = await cur.fetchall()
+        return list(rows)

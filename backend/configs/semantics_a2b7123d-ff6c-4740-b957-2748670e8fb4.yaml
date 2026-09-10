@@ -1,7 +1,7 @@
 version: 1
 models:
 - name: customers
-  source: postgres
+  source: mysql
   physical_name: customers
   description: The **customers** table stores records of customer entities, each identified
     by a unique integer ID and represented by a human‑readable display name.
@@ -30,7 +30,7 @@ models:
     - Client Name
     - Business Name
 - name: orders
-  source: postgres
+  source: mysql
   physical_name: orders
   description: The **orders** table captures each purchase transaction made by a customer.
     It stores the unique order identifier, links the order to its buyer, records the

@@ -94,3 +94,13 @@ class BaseConnector(ABC):
         concrete data context, not just column names/types.
         """
         raise NotImplementedError
+    
+    @abstractmethod
+    async def execute_query(self, sql: str) -> list[dict]:
+        """
+        Executes an arbitrary read-only SQL query (already compiled to
+        physical names) and returns the resulting rows as a list of dicts.
+        The caller (executor_node) is responsible for ensuring the SQL is
+        safe to run, this method trusts its input.
+        """
+        raise NotImplementedError

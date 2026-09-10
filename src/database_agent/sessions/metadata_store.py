@@ -75,6 +75,29 @@ class MetadataStore:
 
     async def delete(self, session_id: str) -> None:
         await self._redis.delete(self._key(session_id))
+        
+        
+    async def list_sessions(self) -> list[dict]:
+        """
+        Scans Redis for all active session metadata keys and returns their
+        session_id, source_type, and created_at. Used by the frontend's
+        connection-switcher UI.
+        """
+        sessions = []
+        async for key in self._redis.scan_iter(match="session:*"):
+            raw = await self._redis.get(key)
+            if raw is None:
+                continue
+            metadata = SessionMetadata.from_json(raw)
+            session_id = key.split(":", 1)[1]
+            sessions.append(
+                {
+                    "session_id": session_id,
+                    "source_type": metadata.source_type.value,
+                    "created_at": metadata.created_at,
+                }
+            )
+        return sessions
 
 
 metadata_store = MetadataStore()

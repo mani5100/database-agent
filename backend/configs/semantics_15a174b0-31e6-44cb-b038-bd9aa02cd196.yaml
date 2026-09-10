@@ -1,0 +1,69 @@
+version: 1
+models:
+- name: employees
+  source: csv
+  physical_name: data
+  description: The **employees** table holds individual employee records, capturing
+    basic personal data, workplace details, compensation, hire date, and current employment
+    status.
+  synonyms:
+  - Employee Records
+  - Staff List
+  - Personnel Table
+  columns:
+  - name: name
+    physical_name: name
+    physical_type: text
+    description: The full name of the employee.
+    synonyms:
+    - Full Name
+    - Employee Name
+  - name: age
+    physical_name: age
+    physical_type: integer
+    description: The employee’s age in years.
+    synonyms:
+    - Years Old
+    - Age (years)
+  - name: employment_city
+    physical_name: em_city
+    physical_type: text
+    description: City where the employee works or is based.
+    synonyms:
+    - Workplace City
+    - Office Location
+    - City of Employment
+  - name: department
+    physical_name: nx_department
+    physical_type: text
+    description: The department or division to which the employee belongs.
+    synonyms:
+    - Division
+    - Team
+    - Unit
+  - name: salary
+    physical_name: em_salary
+    physical_type: integer
+    description: Annual salary paid to the employee, in local currency units.
+    synonyms:
+    - Compensation
+    - Pay
+    - Annual Earnings
+  - name: hire_date
+    physical_name: joined_date
+    physical_type: date
+    description: The date on which the employee started working for the organization.
+    synonyms:
+    - Start Date
+    - Employment Start
+    - Date Joined
+  - name: active_status
+    physical_name: is_active
+    physical_type: boolean
+    description: Flag indicating whether the employee is currently active (True) or
+      not (False).
+    synonyms:
+    - Current Employee
+    - Employed Flag
+    - Is Active
+relationships: []

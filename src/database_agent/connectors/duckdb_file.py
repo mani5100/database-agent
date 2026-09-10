@@ -70,7 +70,7 @@ class DuckDBFileConnector(BaseConnector):
             # Google Sheets arrives here already exported to CSV by the fetch step.
             table_name = "data"
             self.conn.execute(
-                f"CREATE TABLE {table_name} AS SELECT * FROM read_csv_auto(?)",
+                f"CREATE TABLE {table_name} AS SELECT * FROM read_csv_auto(?, ignore_errors=true)",
                 [self.file_path],
             )
             self._table_names = [table_name]
@@ -129,6 +129,13 @@ class DuckDBFileConnector(BaseConnector):
     async def get_sample_rows(self, table_name: str, limit: int = 2) -> list[dict]:
         assert self.conn is not None, "connect() must be called before get_sample_rows()"
         result = self.conn.execute(f"SELECT * FROM {table_name} LIMIT ?", [limit])
+        columns = [desc[0] for desc in result.description]
+        rows = result.fetchall()
+        return [dict(zip(columns, row)) for row in rows]
+    
+    async def execute_query(self, sql: str) -> list[dict]:
+        assert self.conn is not None, "connect() must be called before execute_query()"
+        result = self.conn.execute(sql)
         columns = [desc[0] for desc in result.description]
         rows = result.fetchall()
         return [dict(zip(columns, row)) for row in rows]
