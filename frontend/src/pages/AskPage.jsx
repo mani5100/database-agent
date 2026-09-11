@@ -1,110 +1,279 @@
 // frontend/src/pages/AskPage.jsx
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSessionStore } from "../store/sessionStore";
 import { askQuestion } from "../api/agent";
+import { createChat, listChats, getChatHistory } from "../api/chats";
 import ResultTable from "../components/ResultTable";
 import ChartRenderer from "../components/ChartRenderer";
 import ChartCandidateList from "../components/ChartCandidateList";
 import KpiCard from "../components/KpiCard";
 import ReactMarkdown from "react-markdown";
 
+function toEntry(message) {
+  const candidates = message.chart_candidates || [];
+  const defaultCandidate = candidates.find((c) => c.is_default);
+  return {
+    question: message.question,
+    sql: message.sql,
+    answer: message.answer,
+    resultRows: message.result_rows,
+    chartCandidates: candidates,
+    selectedChartId: defaultCandidate ? defaultCandidate.chart_id : null,
+  };
+}
+
 function AskPage() {
   const sessionId = useSessionStore((state) => state.sessionId);
-  const chatHistory = useSessionStore((state) => state.chatHistory);
-  const addChatEntry = useSessionStore((state) => state.addChatEntry);
+  const chats = useSessionStore((state) => state.chats);
+  const activeChatId = useSessionStore((state) => state.activeChatId);
+  const chatMessages = useSessionStore((state) => state.chatMessages);
+  const setChats = useSessionStore((state) => state.setChats);
+  const addChat = useSessionStore((state) => state.addChat);
+  const setActiveChatId = useSessionStore((state) => state.setActiveChatId);
+  const setChatMessages = useSessionStore((state) => state.setChatMessages);
+  const addChatMessage = useSessionStore((state) => state.addChatMessage);
 
+  const [chatsLoading, setChatsLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [creatingChat, setCreatingChat] = useState(false);
   const [question, setQuestion] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [asking, setAsking] = useState(false);
   const [error, setError] = useState(null);
+
+  // Load (or bootstrap) the chat list for this session on first mount.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function init() {
+      setChatsLoading(true);
+      setError(null);
+      try {
+        const response = await listChats(sessionId);
+        if (cancelled) return;
+
+        if (response.chats.length === 0) {
+          const chat = await createChat(sessionId);
+          if (cancelled) return;
+          setChats([chat]);
+          setActiveChatId(chat.chat_id);
+          setChatMessages(chat.chat_id, []);
+        } else {
+          setChats(response.chats);
+          const currentActive = useSessionStore.getState().activeChatId;
+          const stillValid = response.chats.some((c) => c.chat_id === currentActive);
+          setActiveChatId(stillValid ? currentActive : response.chats[0].chat_id);
+        }
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setChatsLoading(false);
+      }
+    }
+
+    init();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, setChats, setActiveChatId, setChatMessages]);
+
+  // Fetch full history for a chat the first time it becomes active.
+  useEffect(() => {
+    if (!activeChatId || chatMessages[activeChatId] !== undefined) return;
+
+    let cancelled = false;
+
+    async function loadHistory() {
+      setHistoryLoading(true);
+      setError(null);
+      try {
+        const response = await getChatHistory(activeChatId);
+        if (cancelled) return;
+        setChatMessages(activeChatId, (response.messages || []).map(toEntry));
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setHistoryLoading(false);
+      }
+    }
+
+    loadHistory();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeChatId, chatMessages, setChatMessages]);
+
+  async function handleNewChat() {
+    setError(null);
+
+    // Reuse an already-empty chat instead of piling up throwaway ones.
+    const existingEmpty = chats.find((c) => chatMessages[c.chat_id]?.length === 0);
+    if (existingEmpty) {
+      setActiveChatId(existingEmpty.chat_id);
+      return;
+    }
+
+    setCreatingChat(true);
+    try {
+      const chat = await createChat(sessionId);
+      addChat(chat);
+      setActiveChatId(chat.chat_id);
+      setChatMessages(chat.chat_id, []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCreatingChat(false);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!question.trim()) return;
+    if (!question.trim() || !activeChatId) return;
 
     setError(null);
-    setLoading(true);
+    setAsking(true);
 
     try {
-      const response = await askQuestion(sessionId, question);
-      const defaultCandidate = response.chart_candidates.find((c) => c.is_default);
-
-      addChatEntry({
-        question: response.question,
-        sql: response.sql,
-        answer: response.answer,
-        resultRows: response.result_rows,
-        chartCandidates: response.chart_candidates,
-        selectedChartId: defaultCandidate ? defaultCandidate.chart_id : null,
-      });
+      const response = await askQuestion(sessionId, activeChatId, question);
+      addChatMessage(activeChatId, toEntry(response));
       setQuestion("");
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setAsking(false);
     }
   }
 
+  const activeMessages = (activeChatId && chatMessages[activeChatId]) || [];
+
   return (
-    <div>
-      <h1 style={{ fontSize: 22, marginBottom: 4 }}>Ask a question</h1>
-      <p style={{ color: "var(--color-muted)", marginBottom: 24 }}>
-        Ask anything about the connected data.
-      </p>
+    <div
+      style={{
+        marginLeft: "calc(50% - 50vw)",
+        marginRight: "calc(50% - 50vw)",
+        padding: "0 24px",
+      }}
+    >
+      <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", gap: 24, alignItems: "flex-start" }}>
+        <aside style={{ width: 220, flexShrink: 0 }}>
+          <button
+            onClick={handleNewChat}
+            disabled={creatingChat || !sessionId}
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              marginBottom: 12,
+              borderRadius: "var(--radius)",
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
+              color: "var(--color-ink)",
+              fontSize: 13,
+              fontWeight: 600,
+              opacity: creatingChat ? 0.6 : 1,
+            }}
+          >
+            + New chat
+          </button>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, marginBottom: 24 }}>
-        {chatHistory.map((entry, i) => (
-          <ChatEntry key={i} entry={entry} />
-        ))}
-      </div>
+          {chatsLoading && (
+            <div style={{ fontSize: 13, color: "var(--color-muted)" }}>Loading chats...</div>
+          )}
 
-      {error && (
-        <div
-          style={{
-            marginBottom: 16,
-            padding: 12,
-            borderRadius: "var(--radius)",
-            background: "var(--color-error-bg)",
-            color: "var(--color-error)",
-            fontSize: 13,
-          }}
-        >
-          {error}
+          {!chatsLoading && chats.length === 0 && (
+            <div style={{ fontSize: 13, color: "var(--color-muted)" }}>No chats yet.</div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {chats.map((chat) => {
+              const isActive = chat.chat_id === activeChatId;
+              return (
+                <button
+                  key={chat.chat_id}
+                  onClick={() => setActiveChatId(chat.chat_id)}
+                  style={{
+                    textAlign: "left",
+                    padding: "8px 12px",
+                    borderRadius: "var(--radius)",
+                    border: isActive ? "1px solid var(--color-accent)" : "1px solid var(--color-border)",
+                    background: isActive ? "var(--color-surface)" : "transparent",
+                    color: "var(--color-ink)",
+                    fontSize: 13,
+                    fontWeight: isActive ? 600 : 400,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {chat.title}
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 style={{ fontSize: 22, marginBottom: 4 }}>Ask a question</h1>
+          <p style={{ color: "var(--color-muted)", marginBottom: 24 }}>
+            Ask anything about the connected data.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 24, marginBottom: 24 }}>
+            {historyLoading && (
+              <div style={{ color: "var(--color-muted)", fontSize: 14 }}>Loading chat history...</div>
+            )}
+            {!historyLoading &&
+              activeMessages.map((entry, i) => <ChatEntry key={i} entry={entry} />)}
+          </div>
+
+          {error && (
+            <div
+              style={{
+                marginBottom: 16,
+                padding: 12,
+                borderRadius: "var(--radius)",
+                background: "var(--color-error-bg)",
+                color: "var(--color-error)",
+                fontSize: 13,
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8 }}>
+            <input
+              type="text"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="e.g. What is the total revenue by customer?"
+              disabled={asking || !activeChatId}
+              style={{
+                flex: 1,
+                padding: "10px 14px",
+                borderRadius: "var(--radius)",
+                border: "1px solid var(--color-border)",
+                fontSize: 14,
+              }}
+            />
+            <button
+              type="submit"
+              disabled={asking || !activeChatId}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "var(--radius)",
+                border: "none",
+                background: "var(--color-accent)",
+                color: "white",
+                fontSize: 14,
+                fontWeight: 600,
+                opacity: asking || !activeChatId ? 0.6 : 1,
+              }}
+            >
+              {asking ? "Thinking..." : "Ask"}
+            </button>
+          </form>
         </div>
-      )}
-
-      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8 }}>
-        <input
-          type="text"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="e.g. What is the total revenue by customer?"
-          disabled={loading}
-          style={{
-            flex: 1,
-            padding: "10px 14px",
-            borderRadius: "var(--radius)",
-            border: "1px solid var(--color-border)",
-            fontSize: 14,
-          }}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "10px 20px",
-            borderRadius: "var(--radius)",
-            border: "none",
-            background: "var(--color-accent)",
-            color: "white",
-            fontSize: 14,
-            fontWeight: 600,
-            opacity: loading ? 0.6 : 1,
-          }}
-        >
-          {loading ? "Thinking..." : "Ask"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
@@ -162,10 +331,10 @@ function ChatEntry({ entry }) {
 
       <div style={{ padding: 16 }}>
         {activeTab === "answer" && (
-  <div style={{ lineHeight: 1.6 }}>
-    <ReactMarkdown>{entry.answer}</ReactMarkdown>
-  </div>
-)}
+          <div style={{ lineHeight: 1.6 }}>
+            <ReactMarkdown>{entry.answer}</ReactMarkdown>
+          </div>
+        )}
 
         {activeTab === "query" && (
           <pre

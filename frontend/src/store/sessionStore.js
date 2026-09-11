@@ -25,8 +25,10 @@ export const useSessionStore = create((set) => ({
   semanticLayerFilePath: null,
   indexedPoints: null,
 
-  // Chat history for the ask page
-  chatHistory: [], // [{ question, answer, resultRows, chartCandidates }, ...]
+  // Chats for the ask page — multiple independent conversations per session
+  chats: [], // [{ chat_id, title }, ...]
+  activeChatId: null,
+  chatMessages: {}, // { [chat_id]: [{ question, sql, answer, resultRows, chartCandidates, selectedChartId }, ...] }
 
   // --- actions ---
 
@@ -44,6 +46,9 @@ export const useSessionStore = create((set) => ({
       tableDetails: {},
       semanticLayerFilePath: null,
       indexedPoints: null,
+      chats: [],
+      activeChatId: null,
+      chatMessages: {},
     }),
     
   setTableNames: (tableNames) => set({ tableNames }),
@@ -70,8 +75,25 @@ export const useSessionStore = create((set) => ({
       currentStep: "review",
     }),
 
-  addChatEntry: (entry) =>
-    set((state) => ({ chatHistory: [...state.chatHistory, entry] })),
+  setChats: (chats) => set({ chats }),
+
+  addChat: (chat) =>
+    set((state) => ({ chats: [...state.chats, chat] })),
+
+  setActiveChatId: (chatId) => set({ activeChatId: chatId }),
+
+  setChatMessages: (chatId, messages) =>
+    set((state) => ({
+      chatMessages: { ...state.chatMessages, [chatId]: messages },
+    })),
+
+  addChatMessage: (chatId, entry) =>
+    set((state) => ({
+      chatMessages: {
+        ...state.chatMessages,
+        [chatId]: [...(state.chatMessages[chatId] || []), entry],
+      },
+    })),
 
   goToStep: (step) => set({ currentStep: step }),
 
@@ -85,6 +107,8 @@ export const useSessionStore = create((set) => ({
       tableDetails: {},
       semanticLayerFilePath: null,
       indexedPoints: null,
-      chatHistory: [],
+      chats: [],
+      activeChatId: null,
+      chatMessages: {},
     }),
 }));

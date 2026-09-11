@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSessionStore } from "../store/sessionStore";
 import { listSessions } from "../api/session";
+import { closeSession } from "../api/connections";
 
 const SOURCE_LABELS = {
   postgres: "PostgreSQL",
@@ -15,9 +16,12 @@ function ConnectionsPage() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
+  const activeSessionId = useSessionStore((state) => state.sessionId);
   const setActiveSession = useSessionStore((state) => state.setActiveSession);
   const goToStep = useSessionStore((state) => state.goToStep);
+  const reset = useSessionStore((state) => state.reset);
 
   useEffect(() => {
     async function load() {
@@ -36,6 +40,25 @@ function ConnectionsPage() {
   function handleSelect(session) {
     setActiveSession(session.session_id, session.source_type);
     goToStep("select");
+  }
+
+  async function handleDelete(e, session) {
+    e.stopPropagation();
+    if (!window.confirm("Close this connection? This cannot be undone.")) return;
+
+    setError(null);
+    setDeletingId(session.session_id);
+    try {
+      await closeSession(session.session_id);
+      setSessions((prev) => prev.filter((s) => s.session_id !== session.session_id));
+      if (session.session_id === activeSessionId) {
+        reset();
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
@@ -67,26 +90,44 @@ function ConnectionsPage() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
         {sessions.map((session) => (
-          <button
-            key={session.session_id}
-            onClick={() => handleSelect(session)}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "12px 16px",
-              border: "1px solid var(--color-border)",
-              borderRadius: "var(--radius)",
-              background: "var(--color-surface)",
-              textAlign: "left",
-              fontSize: 14,
-            }}
-          >
-            <span style={{ fontWeight: 500 }}>{SOURCE_LABELS[session.source_type] || session.source_type}</span>
-            <span className="mono" style={{ fontSize: 12, color: "var(--color-muted)" }}>
-              {session.session_id.slice(0, 8)}
-            </span>
-          </button>
+          <div key={session.session_id} style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => handleSelect(session)}
+              style={{
+                flex: 1,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "12px 16px",
+                border: "1px solid var(--color-border)",
+                borderRadius: "var(--radius)",
+                background: "var(--color-surface)",
+                textAlign: "left",
+                fontSize: 14,
+              }}
+            >
+              <span style={{ fontWeight: 500 }}>{SOURCE_LABELS[session.source_type] || session.source_type}</span>
+              <span className="mono" style={{ fontSize: 12, color: "var(--color-muted)" }}>
+                {session.session_id.slice(0, 8)}
+              </span>
+            </button>
+            <button
+              onClick={(e) => handleDelete(e, session)}
+              disabled={deletingId === session.session_id}
+              title="Close connection"
+              style={{
+                padding: "12px 16px",
+                border: "1px solid var(--color-border)",
+                borderRadius: "var(--radius)",
+                background: "var(--color-surface)",
+                color: "var(--color-error)",
+                fontSize: 13,
+                opacity: deletingId === session.session_id ? 0.6 : 1,
+              }}
+            >
+              {deletingId === session.session_id ? "..." : "Close"}
+            </button>
+          </div>
         ))}
       </div>
 

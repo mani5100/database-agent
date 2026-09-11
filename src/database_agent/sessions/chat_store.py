@@ -4,6 +4,7 @@ import json
 import uuid
 
 import asyncpg
+from fastapi.encoders import jsonable_encoder
 
 from database_agent.core.config import get_settings
 
@@ -88,8 +89,8 @@ class ChatStore:
                 VALUES ($1, $2, $3, $4, $5, $6)
                 """,
                 chat_id, question, sql, answer,
-                json.dumps(result_rows) if result_rows is not None else None,
-                json.dumps(chart_candidates) if chart_candidates is not None else None,
+                json.dumps(jsonable_encoder(result_rows)) if result_rows is not None else None,
+                json.dumps(jsonable_encoder(chart_candidates)) if chart_candidates is not None else None,
             )
 
     async def get_history(self, chat_id: str) -> list[dict]:
