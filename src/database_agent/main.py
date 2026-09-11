@@ -2,6 +2,7 @@
 
 import os
 from contextlib import asynccontextmanager
+from database_agent.sessions.chat_store import chat_store
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,6 +37,8 @@ async def lifespan(app: FastAPI):
     await checkpointer.setup()
 
     graph_builder.set_checkpointer(checkpointer)
+    await chat_store.connect()
+    await chat_store.create_tables()
 
     yield
 

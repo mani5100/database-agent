@@ -24,3 +24,6 @@ class AskResponse(BaseModel):
     result_rows: list[dict] | None
     chart_candidates: list[ChartCandidateResponse]
     
+class AskRequest(BaseModel):
+    chat_id: str
+    question: str

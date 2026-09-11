@@ -13,6 +13,7 @@ from database_agent.sessions.connection_registry import (
 from database_agent.services.input_guardrail import check_question
 from guardrails.errors import ValidationError
 import logging
+from database_agent.sessions.chat_store import chat_store
 
 logger = logging.getLogger(__name__)
 
@@ -68,8 +69,20 @@ async def ask_route(session_id: str, request: AskRequest) -> AskResponse:
         "conversation_history": [],
     }
 
-    final_state = await graph.ainvoke(initial_state,config={"configurable": {"thread_id": session_id}},)
-    logger.info("ask_route: final_state chart_candidates = %s", final_state.get("chart_candidates"))
+    final_state = await graph.ainvoke(
+        initial_state,
+        config={"configurable": {"thread_id": request.chat_id}},
+    )
+
+    await chat_store.add_message(
+        chat_id=request.chat_id,
+        question=request.question,
+        sql=final_state.get("current_sql"),
+        answer=final_state["answer"],
+        result_rows=final_state.get("result_rows"),
+        chart_candidates=final_state.get("chart_candidates"),
+    )
+
     return AskResponse(
         session_id=session_id,
         question=request.question,
