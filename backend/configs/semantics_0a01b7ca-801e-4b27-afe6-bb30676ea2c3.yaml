@@ -1,0 +1,53 @@
+version: 1
+models:
+- name: company_founders
+  source: excel
+  physical_name: sheet_Sheet1
+  description: A concise list of startup founders, their roles, and key online references
+    (LinkedIn and Y Combinator).
+  synonyms:
+  - Founder Records
+  - Founders List
+  - Company Founders Data
+  columns:
+  - name: name
+    physical_name: Name
+    physical_type: text
+    is_primary_key: false
+    description: Full name of the founder.
+    synonyms:
+    - Founder Name
+    - Person's Name
+  - name: title
+    physical_name: Title
+    physical_type: text
+    is_primary_key: false
+    description: Position or role held by the founder within the company.
+    synonyms:
+    - Role
+    - Job Title
+  - name: company
+    physical_name: company
+    physical_type: text
+    is_primary_key: false
+    description: Name of the startup or organization founded.
+    synonyms:
+    - Startup Name
+    - Company Name
+  - name: linkedin_url
+    physical_name: linkedin_url
+    physical_type: text
+    is_primary_key: false
+    description: URL to the founder's LinkedIn profile.
+    synonyms:
+    - LinkedIn Profile Link
+    - LinkedIn URL
+  - name: y_combinator_page_url
+    physical_name: YCombinator
+    physical_type: text
+    is_primary_key: false
+    description: Link to the company's Y Combinator page.
+    synonyms:
+    - YC Page URL
+    - Y Combinator Company Link
+relationships: []

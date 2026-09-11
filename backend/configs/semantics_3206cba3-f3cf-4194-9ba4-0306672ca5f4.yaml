@@ -1,0 +1,132 @@
+version: 1
+models:
+- name: performance_review
+  source: excel
+  physical_name: sheet_Performance_Review
+  description: The **performance_review** table captures key metrics from employee
+    performance evaluations, including the number of projects completed, overall rating,
+    date of the last review, and bonus percentage awarded.
+  synonyms:
+  - performance assessment
+  - employee evaluation
+  - review record
+  columns:
+  - name: employee_name
+    physical_name: name
+    physical_type: text
+    is_primary_key: false
+    description: Full name of the employee being evaluated.
+    synonyms:
+    - full name
+    - staff name
+  - name: projects_completed
+    physical_name: projects_completed
+    physical_type: float
+    is_primary_key: false
+    description: Total number of projects finished by the employee during the review
+      period.
+    synonyms:
+    - completed projects
+    - project count
+  - name: performance_rating
+    physical_name: performance_rating
+    physical_type: float
+    is_primary_key: false
+    description: Overall rating assigned to the employee, typically on a scale from
+      1.0 to 5.0.
+    synonyms:
+    - rating score
+    - evaluation score
+  - name: last_review_date
+    physical_name: last_review_date
+    physical_type: text
+    is_primary_key: false
+    description: Date when the most recent performance review was conducted.
+    synonyms:
+    - review date
+    - assessment date
+  - name: bonus_percentage
+    physical_name: bonus_percent
+    physical_type: float
+    is_primary_key: false
+    description: Percentage of the employee’s base salary awarded as a bonus for the
+      review period.
+    synonyms:
+    - bonus rate
+    - incentive percent
+- name: employee_details
+  source: excel
+  physical_name: sheet_Sheet1
+  description: The **employee_details** table stores basic personal and employment
+    information for staff members, including their name, age, city of residence, department,
+    salary, hire date, and current active status.
+  synonyms:
+  - Employee records
+  - Staff details
+  - Personnel data
+  columns:
+  - name: full_name
+    physical_name: name
+    physical_type: text
+    is_primary_key: false
+    description: The employee's full legal name as used in official documents.
+    synonyms:
+    - Name
+    - Full name
+    - Employee name
+  - name: age
+    physical_name: age
+    physical_type: float
+    is_primary_key: false
+    description: The employee's age expressed in years.
+    synonyms:
+    - Years old
+    - Age (years)
+  - name: city_of_residence
+    physical_name: city
+    physical_type: text
+    is_primary_key: false
+    description: The city where the employee currently resides.
+    synonyms:
+    - Residence city
+    - City
+  - name: department
+    physical_name: department
+    physical_type: text
+    is_primary_key: false
+    description: The organizational unit or business division to which the employee
+      belongs.
+    synonyms:
+    - Division
+    - Team
+    - Business unit
+  - name: salary
+    physical_name: salary
+    physical_type: float
+    is_primary_key: false
+    description: The employee's annual base compensation in local currency units.
+    synonyms:
+    - Annual salary
+    - Pay
+    - Compensation
+  - name: hire_date
+    physical_name: joined_date
+    physical_type: text
+    is_primary_key: false
+    description: The date the employee started working at the company, formatted as
+      YYYY‑MM‑DD.
+    synonyms:
+    - Start date
+    - Employment start date
+    - Joining date
+  - name: active_status
+    physical_name: is_active
+    physical_type: boolean
+    is_primary_key: false
+    description: Indicates whether the employee is currently employed (True) or not
+      (False).
+    synonyms:
+    - Current status
+    - Active flag
+    - Employed
+relationships: []

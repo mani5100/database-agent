@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { useSessionStore } from "../store/sessionStore";
-import { connectPostgres, connectMysql, connectCsv, connectExcel } from "../api/connections";
+import { connectPostgres, connectMysql, connectCsv, connectExcel, connectGoogleSheets } from "../api/connections";
+import { getGoogleLoginUrl, searchGoogleSheets } from "../api/googleAuth";
 
 const SOURCE_TYPES = [
   { key: "postgres", label: "PostgreSQL" },
   { key: "mysql", label: "MySQL" },
   { key: "csv", label: "CSV" },
   { key: "excel", label: "Excel" },
+  { key: "google_sheets", label: "Google Sheets" },
 ];
 
 function ConnectPage() {
@@ -22,11 +24,14 @@ function ConnectPage() {
     password: "",
     database: "",
     schema: "public",
+    sheetUrl: "",
   });
   const [file, setFile] = useState(null);
+  const [selectedSheet, setSelectedSheet] = useState(null);
 
   const setConnection = useSessionStore((state) => state.setConnection);
-  const goToStep = useSessionStore((state) => state.goToStep);  
+  const goToStep = useSessionStore((state) => state.goToStep);
+  const googleSessionId = useSessionStore((state) => state.googleSessionId);
 
   function updateField(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -62,6 +67,17 @@ function ConnectPage() {
       } else if (sourceType === "excel") {
         if (!file) throw new Error("Choose an Excel file first.");
         response = await connectExcel(file);
+      } else if (sourceType === "google_sheets") {
+        if (selectedSheet) {
+          response = await connectGoogleSheets({
+            googleSessionId,
+            sheetId: selectedSheet.id,
+          });
+        } else if (form.sheetUrl) {
+          response = await connectGoogleSheets({ sheetUrl: form.sheetUrl });
+        } else {
+          throw new Error("Paste a public sheet URL, or sign in and pick a sheet.");
+        }
       }
 
       setConnection(response.session_id, sourceType);
@@ -74,6 +90,7 @@ function ConnectPage() {
 
   const isDatabase = sourceType === "postgres" || sourceType === "mysql";
   const isFile = sourceType === "csv" || sourceType === "excel";
+  const isGoogleSheets = sourceType === "google_sheets";
 
   return (
     <div>
@@ -81,7 +98,6 @@ function ConnectPage() {
       <p style={{ color: "var(--color-muted)", marginBottom: 32 }}>
         Choose where your data lives.
       </p>
-
 
       <button
         onClick={() => goToStep("connections")}
@@ -98,7 +114,7 @@ function ConnectPage() {
         Switch to an existing connection
       </button>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
         {SOURCE_TYPES.map((type) => (
           <button
             key={type.key}
@@ -145,6 +161,16 @@ function ConnectPage() {
           </div>
         )}
 
+        {isGoogleSheets && (
+          <GoogleSheetsSection
+            sheetUrl={form.sheetUrl}
+            onUrlChange={(v) => updateField("sheetUrl", v)}
+            googleSessionId={googleSessionId}
+            selectedSheet={selectedSheet}
+            onSelectSheet={setSelectedSheet}
+          />
+        )}
+
         {error && (
           <div
             style={{
@@ -178,6 +204,127 @@ function ConnectPage() {
           {loading ? "Connecting..." : "Connect"}
         </button>
       </form>
+    </div>
+  );
+}
+
+function GoogleSheetsSection({ sheetUrl, onUrlChange, googleSessionId, selectedSheet, onSelectSheet }) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  async function handleLogin() {
+    const { auth_url } = await getGoogleLoginUrl();
+    window.location.href = auth_url;
+  }
+
+  async function handleSearch(e) {
+    const value = e.target.value;
+    setQuery(value);
+    onSelectSheet(null);
+
+    if (!value.trim()) {
+      setResults([]);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const response = await searchGoogleSheets(googleSessionId, value);
+      setResults(response.sheets);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  if (!googleSessionId) {
+    return (
+      <div>
+        <label style={{ display: "block", fontSize: 13, color: "var(--color-muted)", marginBottom: 6 }}>
+          Google Sheets URL (public sheet)
+        </label>
+        <input
+          type="text"
+          value={sheetUrl}
+          placeholder="https://docs.google.com/spreadsheets/d/..."
+          onChange={(e) => onUrlChange(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            borderRadius: "var(--radius)",
+            border: "1px solid var(--color-border)",
+            fontSize: 14,
+            marginBottom: 16,
+          }}
+        />
+        <div style={{ padding: "12px 0", borderTop: "1px solid var(--color-border)" }}>
+          <button
+            type="button"
+            onClick={handleLogin}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "var(--radius)",
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
+              fontSize: 13,
+            }}
+          >
+            Or sign in with Google to browse private sheets
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label style={{ display: "block", fontSize: 13, color: "var(--color-muted)", marginBottom: 6 }}>
+        Search your Google Sheets
+      </label>
+      <input
+        type="text"
+        value={query}
+        placeholder="Type a sheet name..."
+        onChange={handleSearch}
+        style={{
+          width: "100%",
+          padding: "8px 12px",
+          borderRadius: "var(--radius)",
+          border: "1px solid var(--color-border)",
+          fontSize: 14,
+          marginBottom: 8,
+        }}
+      />
+
+      {searching && <div style={{ fontSize: 13, color: "var(--color-muted)" }}>Searching...</div>}
+
+      {!searching && results.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+          {results.map((sheet) => (
+            <button
+              key={sheet.id}
+              type="button"
+              onClick={() => onSelectSheet(sheet)}
+              style={{
+                textAlign: "left",
+                padding: "8px 12px",
+                borderRadius: "var(--radius)",
+                border: selectedSheet?.id === sheet.id ? "1.5px solid var(--color-accent)" : "1px solid var(--color-border)",
+                background: "var(--color-surface)",
+                fontSize: 13,
+              }}
+            >
+              {sheet.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selectedSheet && (
+        <div style={{ fontSize: 13, color: "var(--color-accent)", marginBottom: 8 }}>
+          Selected: {selectedSheet.name}
+        </div>
+      )}
     </div>
   );
 }

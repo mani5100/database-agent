@@ -29,3 +29,11 @@ export async function getSessionSchema(sessionId) {
 export async function closeSession(sessionId) {
   return del(`/session/${sessionId}`);
 }
+
+export async function connectGoogleSheets({ sheetUrl, googleSessionId, sheetId }) {
+  return post("/connect/google_sheets", {
+    sheet_url: sheetUrl || null,
+    google_session_id: googleSessionId || null,
+    sheet_id: sheetId || null,
+  });
+}

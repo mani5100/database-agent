@@ -1,0 +1,83 @@
+version: 1
+models:
+- name: yc_founder_outreach
+  source: excel
+  physical_name: sheet_Sheet1
+  description: This table records the status of outreach efforts to Y Combinator founders
+    on LinkedIn, capturing their profile details and whether a connection request
+    has been sent or accepted, as well as whether further outreach (e.g., email) has
+    taken place.
+  synonyms:
+  - Founder Outreach Log
+  - YC Founder Contact Tracker
+  - LinkedIn Outreach Records
+  columns:
+  - name: linkedin_full_name
+    physical_name: Linkedin Name
+    physical_type: text
+    is_primary_key: false
+    description: The full name of the individual as displayed on their LinkedIn profile.
+    synonyms:
+    - LinkedIn name
+    - Profile name
+    - LinkedIn display name
+  - name: job_title
+    physical_name: title
+    physical_type: text
+    is_primary_key: false
+    description: The current professional title or role held by the founder.
+    synonyms:
+    - Position
+    - Role
+    - Title
+  - name: linkedin_profile_url
+    physical_name: linkedin_url
+    physical_type: text
+    is_primary_key: false
+    description: Web address that links directly to the founder’s LinkedIn profile
+      page.
+    synonyms:
+    - LinkedIn link
+    - Profile URL
+    - LinkedIn URL
+  - name: y_combinator_company_url
+    physical_name: y_combinator Url
+    physical_type: text
+    is_primary_key: false
+    description: Link to the founder’s company page on Y Combinator’s website, if
+      available.
+    synonyms:
+    - YC company URL
+    - Y Combinator link
+    - Company page URL
+  - name: connection_request_sent
+    physical_name: Connection sent
+    physical_type: boolean
+    is_primary_key: false
+    description: Boolean flag indicating whether a LinkedIn connection request has
+      been sent to the founder.
+    synonyms:
+    - Request sent
+    - Connection requested
+    - Invitation sent
+  - name: connection_accepted
+    physical_name: have_accepted
+    physical_type: boolean
+    is_primary_key: false
+    description: Boolean flag showing if the founder accepted the LinkedIn connection
+      request.
+    synonyms:
+    - Accepted
+    - Connection accepted
+    - Reply status
+  - name: outreach_completed
+    physical_name: have_outreached
+    physical_type: boolean
+    is_primary_key: false
+    description: Boolean flag marking whether outreach communication (e.g., email
+      or message) has been completed with the founder.
+    synonyms:
+    - Outreach done
+    - Contact made
+    - Outreach finished
+relationships: []

@@ -10,6 +10,8 @@ from database_agent.sessions.connection_registry import (
     connection_registry,
     SessionNotFoundError,
 )
+from database_agent.services.input_guardrail import check_question
+from guardrails.errors import ValidationError
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,10 @@ _DIALECT_BY_SOURCE_TYPE = {
 
 @router.post("/session/{session_id}/ask", response_model=AskResponse)
 async def ask_route(session_id: str, request: AskRequest) -> AskResponse:
+    try:
+        check_question(request.question)
+    except ValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     try:
         connector = await connection_registry.get(session_id)
     except SessionNotFoundError:

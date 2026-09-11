@@ -6,6 +6,7 @@ import { askQuestion } from "../api/agent";
 import ResultTable from "../components/ResultTable";
 import ChartRenderer from "../components/ChartRenderer";
 import ChartCandidateList from "../components/ChartCandidateList";
+import KpiCard from "../components/KpiCard";
 import ReactMarkdown from "react-markdown";
 
 function AskPage() {
@@ -113,12 +114,17 @@ function ChatEntry({ entry }) {
   const [selectedChartId, setSelectedChartId] = useState(entry.selectedChartId);
 
   const selectedCandidate = entry.chartCandidates.find((c) => c.chart_id === selectedChartId);
+  const isSingleValueResult =
+    entry.chartCandidates.length === 0 &&
+    entry.resultRows &&
+    entry.resultRows.length === 1 &&
+    Object.keys(entry.resultRows[0]).length > 0;
 
   const TABS = [
     { key: "answer", label: "Answer" },
     { key: "query", label: "Query" },
     { key: "table", label: "Table" },
-    ...(entry.chartCandidates.length > 0 ? [{ key: "chart", label: "Chart" }] : []),
+    ...(entry.chartCandidates.length > 0 || isSingleValueResult ? [{ key: "chart", label: "Chart" }] : []),
   ];
 
   return (
@@ -186,6 +192,9 @@ function ChatEntry({ entry }) {
           <>
             {selectedCandidate && (
               <ChartRenderer rows={entry.resultRows} candidate={selectedCandidate} />
+            )}
+            {!selectedCandidate && isSingleValueResult && (
+              <KpiCard rows={entry.resultRows} />
             )}
             <ChartCandidateList
               candidates={entry.chartCandidates}

@@ -38,6 +38,17 @@ class Settings(BaseSettings):
     ollama_embedding_model: str = "nomic-embed-text:latest"
     
     
+    # --- Google OAuth (private Google Sheets access) ---
+    google_oauth_client_id: str = ""
+    google_oauth_client_secret: str = ""
+    google_oauth_redirect_uri: str = "http://localhost:8000/auth/google/callback"
+    
+    # --- LangSmith (tracing/observability) ---
+    langsmith_tracing: bool = True
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
+    langsmith_api_key: str = ""
+    langsmith_project: str = "database-agent"
+    
     # --- Allowed source types (used for request validation) ---
     allowed_source_types: tuple[str, ...] = (
         "postgres",

@@ -10,6 +10,8 @@ export const useSessionStore = create((set) => ({
   sessionId: null,
   sourceType: null,
 
+  googleSessionId: null,
+
   // Phase 1: table names
   tableNames: {}, // { physical_name: business_name }
 
@@ -30,6 +32,8 @@ export const useSessionStore = create((set) => ({
 
   setConnection: (sessionId, sourceType) =>
     set({ sessionId, sourceType, currentStep: "select" }),
+
+  setGoogleSessionId: (googleSessionId) => set({ googleSessionId }),
 
   setActiveSession: (sessionId, sourceType) =>
     set({

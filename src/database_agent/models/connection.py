@@ -50,3 +50,8 @@ class ConnectionResponse(BaseModel):
     source_type: str
     tables: list[TableResponse]
     relationships: list[RelationshipResponse]
+    
+class GoogleSheetsConnectionRequest(BaseModel):
+    sheet_url: str | None = None
+    google_session_id: str | None = None
+    sheet_id: str | None = None
