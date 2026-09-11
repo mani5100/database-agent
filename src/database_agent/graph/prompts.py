@@ -13,7 +13,11 @@ Rules, all mandatory:
 5. For text/string filter comparisons, always compare case-insensitively, e.g. use LOWER(table.column) = LOWER('value') rather than a direct equality check, since data casing may not match the casing in the question.
 
 Available schema:
-{schema_context}"""
+{schema_context}
+
+Previous conversation in this session (use this to resolve follow-up questions"):
+{conversation_history}"""
+
 
 
 QUERY_RETRY_SYSTEM_PROMPT = """You write SQL queries to answer questions about a database.

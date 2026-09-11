@@ -21,6 +21,14 @@ def _get_llm() -> ChatOllama:
         temperature=0,
     )
 
+def _format_history(history: list[dict]) -> str:
+    if not history:
+        return "No previous questions in this session."
+    lines = []
+    for turn in history[-5:]:  # last 5 turns, keeps prompt size bounded
+        lines.append(f"Q: {turn['question']}\nA: {turn['answer']}")
+    return "\n\n".join(lines)
+
 
 def _format_context(context: QueryContext) -> str:
     lines = []
@@ -42,6 +50,8 @@ async def query_writer_node(state: AgentState) -> dict:
     schema_context = _format_context(state["query_context"])
     llm = _get_llm().with_structured_output(SQLWriteResponse)
 
+    conversation_history = _format_history(state.get("conversation_history", []))
+
     if state.get("error") and state.get("current_sql"):
         chain = QUERY_RETRY_PROMPT | llm
         response: SQLWriteResponse = await chain.ainvoke(
@@ -50,12 +60,17 @@ async def query_writer_node(state: AgentState) -> dict:
                 "question": state["question"],
                 "previous_sql": state["current_sql"],
                 "error": state["error"],
+                "conversation_history": conversation_history,
             }
         )
     else:
         chain = QUERY_WRITER_PROMPT | llm
         response: SQLWriteResponse = await chain.ainvoke(
-            {"schema_context": schema_context, "question": state["question"]}
+            {
+                "schema_context": schema_context,
+                "question": state["question"],
+                "conversation_history": conversation_history,
+            }
         )
 
     return {

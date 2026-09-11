@@ -49,6 +49,8 @@ class Settings(BaseSettings):
     langsmith_api_key: str = ""
     langsmith_project: str = "database-agent"
     
+    checkpoint_db_uri: str = "postgresql://agent:agent@localhost:5434/checkpoints"
+    
     # --- Allowed source types (used for request validation) ---
     allowed_source_types: tuple[str, ...] = (
         "postgres",

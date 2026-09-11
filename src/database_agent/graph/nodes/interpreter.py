@@ -31,4 +31,11 @@ async def interpreter_node(state: AgentState) -> dict:
             "result_rows": state["result_rows"],
         }
     )
-    return {"answer": response.answer}
+
+    turn = {
+        "question": state["question"],
+        "sql": state.get("current_sql"),
+        "answer": response.answer,
+    }
+
+    return {"answer": response.answer, "conversation_history": [turn]}

@@ -65,9 +65,10 @@ async def ask_route(session_id: str, request: AskRequest) -> AskResponse:
         "result_rows": None,
         "answer": None,
         "chart_candidates": None,
+        "conversation_history": [],
     }
 
-    final_state = await graph.ainvoke(initial_state)
+    final_state = await graph.ainvoke(initial_state,config={"configurable": {"thread_id": session_id}},)
     logger.info("ask_route: final_state chart_candidates = %s", final_state.get("chart_candidates"))
     return AskResponse(
         session_id=session_id,

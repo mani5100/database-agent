@@ -1,6 +1,7 @@
 # src/database_agent/graph/state.py
 
-from typing import TypedDict
+from typing import TypedDict,Annotated
+import operator
 
 from database_agent.models.query_context import QueryContext
 
@@ -20,3 +21,5 @@ class AgentState(TypedDict):
     result_rows: list[dict] | None
     answer: str | None
     chart_candidates: list[dict] | None
+    
+    conversation_history: Annotated[list[dict], operator.add]
