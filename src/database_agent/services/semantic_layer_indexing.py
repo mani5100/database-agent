@@ -76,3 +76,19 @@ async def index_semantic_layer(session_id: str, models: list[dict]) -> int:
     await client.upsert(collection_name=settings.qdrant_collection_name, points=points)
 
     return len(points)
+
+async def delete_session_from_index(session_id: str) -> None:
+    """
+    Removes every indexed column point for this session_id from Qdrant.
+    Called when a session is explicitly closed, so no orphaned vectors
+    remain searchable (or just taking up storage) after the session
+    that owns them no longer exists.
+    """
+    settings = get_settings()
+    client = get_qdrant_client()
+    await client.delete(
+        collection_name=settings.qdrant_collection_name,
+        points_selector=Filter(
+            must=[FieldCondition(key="session_id", match=MatchValue(value=session_id))]
+        ),
+    )

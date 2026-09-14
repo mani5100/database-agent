@@ -111,6 +111,28 @@ class ChatStore:
             }
             for r in rows
         ]
+        
+    async def delete_chats_for_session(self, session_id: str) -> list[str]:
+        """
+        Deletes all chats and their messages for this session_id.
+        Returns the list of deleted chat_ids, useful for also cleaning up
+        their LangGraph checkpoints (keyed by chat_id), if that's added later.
+        """
+        assert self._pool is not None
+        async with self._pool.acquire() as conn:
+            chat_rows = await conn.fetch(
+                "SELECT chat_id FROM chats WHERE session_id = $1", session_id
+            )
+            chat_ids = [str(r["chat_id"]) for r in chat_rows]
 
+            if chat_ids:
+                await conn.execute(
+                    "DELETE FROM chat_messages WHERE chat_id = ANY($1::uuid[])", chat_ids
+                )
+                await conn.execute(
+                    "DELETE FROM chats WHERE session_id = $1", session_id
+                )
+
+        return chat_ids
 
 chat_store = ChatStore()

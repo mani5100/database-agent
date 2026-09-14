@@ -1,4 +1,4 @@
-# src/src.database_agent/connectors/base.py
+# src/database_agent/connectors/base.py
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field

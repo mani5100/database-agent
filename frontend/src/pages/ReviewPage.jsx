@@ -5,9 +5,11 @@ import ReactMarkdown from "react-markdown";
 import { useSessionStore } from "../store/sessionStore";
 import { getErd } from "../api/erd";
 import ErdDiagram from "../components/ErdDiagram";
+import RelationshipsPanel from "../components/RelationshipsPanel";
 
 function ReviewPage() {
   const sessionId = useSessionStore((state) => state.sessionId);
+  const sourceType = useSessionStore((state) => state.sourceType);
   const tableNames = useSessionStore((state) => state.tableNames);
   const selectedTables = useSessionStore((state) => state.selectedTables);
   const tableDetails = useSessionStore((state) => state.tableDetails);
@@ -18,24 +20,34 @@ function ReviewPage() {
   const [erd, setErd] = useState(null);
   const [erdError, setErdError] = useState(null);
 
-  useEffect(() => {
-    async function loadErd() {
-      try {
-        const response = await getErd(sessionId);
-        setErd(response);
-      } catch (err) {
-        setErdError(err.message);
-      }
+  const canEditRelationships = sourceType === "postgres" || sourceType === "mysql";
+
+  async function loadErd() {
+    try {
+      const response = await getErd(sessionId);
+      setErd(response);
+    } catch (err) {
+      setErdError(err.message);
     }
+  }
+
+  useEffect(() => {
     loadErd();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   return (
     <div>
       <h1 style={{ fontSize: 22, marginBottom: 4 }}>Semantic layer ready</h1>
       <p style={{ color: "var(--color-muted)", marginBottom: 24 }}>
-        {indexedPoints} column{indexedPoints === 1 ? "" : "s"} indexed across {selectedTables.length} table
-        {selectedTables.length === 1 ? "" : "s"}.
+        {indexedPoints != null ? (
+          <>
+            {indexedPoints} column{indexedPoints === 1 ? "" : "s"} indexed across {selectedTables.length} table
+            {selectedTables.length === 1 ? "" : "s"}.
+          </>
+        ) : (
+          <>Resumed session — reviewing the existing semantic layer.</>
+        )}
       </p>
 
       <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--color-border)", marginBottom: 20 }}>
@@ -64,13 +76,43 @@ function ReviewPage() {
 
       {activeTab === "tables" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 32 }}>
-          {selectedTables.map((physicalName) => {
-            const detail = tableDetails[physicalName];
-            if (!detail) return null;
+          {selectedTables.length > 0 &&
+            selectedTables.map((physicalName) => {
+              const detail = tableDetails[physicalName];
+              if (!detail) return null;
 
-            return (
+              return (
+                <div
+                  key={physicalName}
+                  style={{
+                    padding: 16,
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "var(--radius)",
+                    background: "var(--color-surface)",
+                  }}
+                >
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>{tableNames[physicalName]}</div>
+                  <div style={{ fontSize: 14, color: "var(--color-muted)", marginBottom: 10 }}>
+                    <ReactMarkdown>{detail.description}</ReactMarkdown>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {detail.columns.map((col) => (
+                      <div key={col.physical_name} style={{ fontSize: 13 }}>
+                        {col.business_name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+          {/* Resumed session: per-table descriptions weren't generated this
+              browser session, so fall back to the ERD's table/column names. */}
+          {selectedTables.length === 0 &&
+            erd &&
+            erd.tables.map((table) => (
               <div
-                key={physicalName}
+                key={table.name}
                 style={{
                   padding: 16,
                   border: "1px solid var(--color-border)",
@@ -78,20 +120,20 @@ function ReviewPage() {
                   background: "var(--color-surface)",
                 }}
               >
-                <div style={{ fontWeight: 600, marginBottom: 6 }}>{tableNames[physicalName]}</div>
-                <div style={{ fontSize: 14, color: "var(--color-muted)", marginBottom: 10 }}>
-                  <ReactMarkdown>{detail.description}</ReactMarkdown>
-                </div>
+                <div style={{ fontWeight: 600, marginBottom: 10 }}>{table.name}</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  {detail.columns.map((col) => (
-                    <div key={col.physical_name} style={{ fontSize: 13 }}>
-                      {col.business_name}
+                  {table.columns.map((col) => (
+                    <div key={col.name} style={{ fontSize: 13 }}>
+                      {col.name}
                     </div>
                   ))}
                 </div>
               </div>
-            );
-          })}
+            ))}
+
+          {selectedTables.length === 0 && !erd && !erdError && (
+            <div style={{ color: "var(--color-muted)" }}>Loading tables...</div>
+          )}
         </div>
       )}
 
@@ -113,6 +155,9 @@ function ReviewPage() {
           {erd && <ErdDiagram tables={erd.tables} relationships={erd.relationships} />}
           {!erd && !erdError && (
             <div style={{ color: "var(--color-muted)" }}>Loading diagram...</div>
+          )}
+          {erd && canEditRelationships && (
+            <RelationshipsPanel sessionId={sessionId} tables={erd.tables} onChange={loadErd} />
           )}
         </div>
       )}

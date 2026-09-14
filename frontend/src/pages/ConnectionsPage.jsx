@@ -39,7 +39,7 @@ function ConnectionsPage() {
 
   function handleSelect(session) {
     setActiveSession(session.session_id, session.source_type);
-    goToStep("select");
+    goToStep("ask");
   }
 
   async function handleDelete(e, session) {

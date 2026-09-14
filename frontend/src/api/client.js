@@ -39,6 +39,13 @@ export async function postFormData(path, formData) {
   });
 }
 
+export async function put(path, body) {
+  return request(path, {
+    method: "PUT",
+    body: body ? JSON.stringify(body) : undefined,
+  });
+}
+
 export async function del(path) {
   return request(path, { method: "DELETE" });
 }

@@ -1,7 +1,7 @@
-# src/src.database_agent/sessions/connection_registry.py
+# src/database_agent/sessions/connection_registry.py
 
-from src.database_agent.connectors.base import BaseConnector, SourceType
-from src.database_agent.sessions.metadata_store import metadata_store
+from database_agent.connectors.base import BaseConnector, SourceType
+from database_agent.sessions.metadata_store import metadata_store
 
 
 class ConnectionRegistry:
@@ -66,9 +66,9 @@ class SessionNotFoundError(Exception):
 
 def _rebuild_connector(source_type: SourceType, connection_params: dict) -> BaseConnector:
     # Deferred import to avoid a circular import between this module and connectors/.
-    from src.database_agent.connectors.postgres import PostgresConnector
-    from src.database_agent.connectors.mysql import MySQLConnector
-    from src.database_agent.connectors.duckdb_file import DuckDBFileConnector
+    from database_agent.connectors.postgres import PostgresConnector
+    from database_agent.connectors.mysql import MySQLConnector
+    from database_agent.connectors.duckdb_file import DuckDBFileConnector
 
     if source_type == SourceType.POSTGRES:
         return PostgresConnector(**connection_params)

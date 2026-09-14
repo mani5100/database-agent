@@ -3,6 +3,7 @@
 from fastapi import APIRouter, HTTPException
 
 from database_agent.models.connection import ConnectionResponse
+from database_agent.services.session_cleanup import close_session_fully
 from database_agent.services.connection_service import _schema_info_to_response
 from database_agent.sessions.connection_registry import (
     connection_registry,
@@ -26,9 +27,10 @@ async def get_session_schema(session_id: str) -> ConnectionResponse:
     return _schema_info_to_response(session_id, connector.source_type, schema_info)
 
 
+
 @router.delete("/session/{session_id}")
 async def close_session(session_id: str) -> dict:
-    await connection_registry.close(session_id)
+    await close_session_fully(session_id)
     return {"status": "closed", "session_id": session_id}
 
 @router.get("/sessions", response_model=SessionListResponse)

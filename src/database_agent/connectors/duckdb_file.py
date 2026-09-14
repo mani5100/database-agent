@@ -1,9 +1,9 @@
-# src/src.database_agent/connectors/duckdb_file.py
+# src/database_agent/connectors/duckdb_file.py
 
 import duckdb
 import openpyxl
 
-from src.database_agent.connectors.base import (
+from database_agent.connectors.base import (
     BaseConnector,
     ColumnInfo,
     SchemaInfo,

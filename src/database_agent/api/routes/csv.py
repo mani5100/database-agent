@@ -1,4 +1,4 @@
-# src/src.database_agent/api/routes/csv.py
+# src/database_agent/api/routes/csv.py
 
 import shutil
 import uuid
@@ -6,9 +6,9 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, UploadFile
 
-from src.database_agent.connectors.base import SourceType
-from src.database_agent.models.connection import ConnectionResponse
-from src.database_agent.services.connection_service import create_file_session
+from database_agent.connectors.base import SourceType
+from database_agent.models.connection import ConnectionResponse
+from database_agent.services.connection_service import create_file_session
 
 router = APIRouter()
 

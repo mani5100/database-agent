@@ -1,12 +1,12 @@
-# src/src.database_agent/sessions/metadata_store.py
+# src/database_agent/sessions/metadata_store.py
 
 import json
 import time
 
 import redis.asyncio as redis
 
-from src.database_agent.connectors.base import SourceType
-from src.database_agent.core.config import get_settings
+from database_agent.connectors.base import SourceType
+from database_agent.core.config import get_settings
 
 
 class SessionMetadata:

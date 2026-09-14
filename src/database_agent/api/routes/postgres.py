@@ -1,9 +1,9 @@
-# src/src.database_agent/api/routes/mysql.py
+# src/database_agent/api/routes/mysql.py
 
 from fastapi import APIRouter, HTTPException
 
-from src.database_agent.models.connection import ConnectionResponse, MySQLConnectionRequest
-from src.database_agent.services.connection_service import create_mysql_session
+from database_agent.models.connection import ConnectionResponse, MySQLConnectionRequest
+from database_agent.services.connection_service import create_mysql_session
 
 router = APIRouter()
 

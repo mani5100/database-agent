@@ -1,18 +1,18 @@
-# src/src.database_agent/services/connection_service.py
+# src/database_agent/services/connection_service.py
 
 import uuid
 
-from src.database_agent.connectors.base import SchemaInfo, SourceType
-from src.database_agent.connectors.postgres import PostgresConnector
-from src.database_agent.connectors.mysql import MySQLConnector
-from src.database_agent.connectors.duckdb_file import DuckDBFileConnector
-from src.database_agent.models.connection import (
+from database_agent.connectors.base import SchemaInfo, SourceType
+from database_agent.connectors.postgres import PostgresConnector
+from database_agent.connectors.mysql import MySQLConnector
+from database_agent.connectors.duckdb_file import DuckDBFileConnector
+from database_agent.models.connection import (
     ColumnResponse,
     ConnectionResponse,
     RelationshipResponse,
     TableResponse,
 )
-from src.database_agent.sessions.connection_registry import connection_registry
+from database_agent.sessions.connection_registry import connection_registry
 
 
 def _schema_info_to_response(

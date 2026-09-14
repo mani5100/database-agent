@@ -1,8 +1,8 @@
-# src/src.database_agent/connectors/postgres.py
+# src/database_agent/connectors/postgres.py
 
 import asyncpg
 
-from src.database_agent.connectors.base import (
+from database_agent.connectors.base import (
     BaseConnector,
     ColumnInfo,
     RelationshipInfo,
