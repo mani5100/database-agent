@@ -17,6 +17,7 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
     restart: unless-stopped
+
   checkpoint-postgres:
     image: postgres:16
     container_name: database-agent-checkpoint-postgres
@@ -29,6 +30,33 @@ services:
     volumes:
       - checkpoint_postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+
+  backend:
+    build: .
+    container_name: database-agent-backend
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: http://qdrant:6333
+      CHECKPOINT_DB_URI: postgresql://agent:agent@checkpoint-postgres:5432/checkpoints
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - qdrant
+      - checkpoint-postgres
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: database-agent-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   redis_data:
   qdrant_data:

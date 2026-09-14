@@ -1,0 +1,28 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	query_writer(query_writer)
+	compiler(compiler)
+	executor(executor)
+	interpreter(interpreter)
+	chart_decider(chart_decider)
+	give_up(give_up)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> query_writer;
+	compiler -.-> executor;
+	compiler -.-> give_up;
+	compiler -.-> query_writer;
+	executor -.-> give_up;
+	executor -.-> interpreter;
+	executor -.-> query_writer;
+	interpreter --> chart_decider;
+	query_writer --> compiler;
+	chart_decider --> __end__;
+	give_up --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
