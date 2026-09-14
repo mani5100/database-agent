@@ -36,13 +36,17 @@ def _format_context(context: QueryContext) -> str:
         lines.append(f"Table: {table.business_name}")
         for col in table.columns:
             lines.append(f"  - {col.business_name} ({col.data_type})")
+
     if context.relationships:
-        lines.append("\nRelationships:")
+        lines.append("\nRelationships (ONLY these tables may be joined, using exactly these columns):")
         for rel in context.relationships:
             lines.append(
                 f"  - {rel['from_model']}.{rel['from_column']} -> "
                 f"{rel['to_model']}.{rel['to_column']}"
             )
+    else:
+        lines.append("\nRelationships: none declared for these tables.")
+
     return "\n".join(lines)
 
 

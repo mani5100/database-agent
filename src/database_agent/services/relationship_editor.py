@@ -52,11 +52,21 @@ def _find_model(document: dict, business_name: str) -> dict:
     raise RelationshipEditError(f"Table '{business_name}' not found in the semantic layer")
 
 
-def _assert_column_exists(model: dict, column_name: str) -> None:
-    if not any(c["name"] == column_name for c in model["columns"]):
-        raise RelationshipEditError(
-            f"Column '{column_name}' not found on table '{model['name']}'"
-        )
+def _resolve_physical_column(model: dict, column_name: str) -> str:
+    """
+    column_name is the BUSINESS name, as given by the frontend (the UI
+    never shows physical names to the user). Relationships are stored
+    using PHYSICAL column names throughout this project, matching how
+    auto-extracted foreign keys are stored in semantic_layer_assembly.py
+    and how erd.py expects to read them back. This translates the given
+    business name to its physical name before anything gets saved.
+    """
+    for col in model["columns"]:
+        if col["name"] == column_name:
+            return col["physical_name"]
+    raise RelationshipEditError(
+        f"Column '{column_name}' not found on table '{model['name']}'"
+    )
 
 
 def add_relationship(
@@ -68,17 +78,12 @@ def add_relationship(
     rel_type: str,
     description: str | None,
 ) -> dict:
-    """
-    Adds a relationship to the semantic layer YAML only. Never touches the
-    real database, this is purely how the agent understands the schema
-    when writing SQL, not an actual foreign key.
-    """
     document = _load_document(session_id)
 
     from_table = _find_model(document, from_model)
     to_table = _find_model(document, to_model)
-    _assert_column_exists(from_table, from_column)
-    _assert_column_exists(to_table, to_column)
+    from_physical_column = _resolve_physical_column(from_table, from_column)
+    to_physical_column = _resolve_physical_column(to_table, to_column)
 
     base_name = f"{from_model}_{from_column}_to_{to_model}_{to_column}"
     existing_names = {r["name"] for r in document.get("relationships", [])}
@@ -91,9 +96,9 @@ def add_relationship(
     new_relationship = {
         "name": name,
         "from_model": from_model,
-        "from_column": from_column,
+        "from_column": from_physical_column,
         "to_model": to_model,
-        "to_column": to_column,
+        "to_column": to_physical_column,
         "type": rel_type,
         "description": description or f"Each {from_model} relates to {to_model}",
     }
@@ -113,8 +118,8 @@ def delete_relationship(session_id: str, relationship_name: str) -> None:
 
     document["relationships"] = updated
     _save_document(session_id, document)
-    
-    
+
+
 def update_relationship(
     session_id: str,
     relationship_name: str,
@@ -125,12 +130,6 @@ def update_relationship(
     rel_type: str,
     description: str | None,
 ) -> dict:
-    """
-    Replaces an existing relationship's fields. Since a relationship's
-    name is derived from its from/to model and column, changing those
-    fields may produce a new name, the caller should use the returned
-    relationship's name going forward, not the old one.
-    """
     document = _load_document(session_id)
     relationships = document.get("relationships", [])
 
@@ -140,8 +139,8 @@ def update_relationship(
 
     from_table = _find_model(document, from_model)
     to_table = _find_model(document, to_model)
-    _assert_column_exists(from_table, from_column)
-    _assert_column_exists(to_table, to_column)
+    from_physical_column = _resolve_physical_column(from_table, from_column)
+    to_physical_column = _resolve_physical_column(to_table, to_column)
 
     base_name = f"{from_model}_{from_column}_to_{to_model}_{to_column}"
     other_names = {r["name"] for r in relationships if r["name"] != relationship_name}
@@ -154,9 +153,9 @@ def update_relationship(
     updated_relationship = {
         "name": name,
         "from_model": from_model,
-        "from_column": from_column,
+        "from_column": from_physical_column,
         "to_model": to_model,
-        "to_column": to_column,
+        "to_column": to_physical_column,
         "type": rel_type,
         "description": description or f"Each {from_model} relates to {to_model}",
     }

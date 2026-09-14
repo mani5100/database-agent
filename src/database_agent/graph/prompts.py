@@ -11,6 +11,7 @@ Rules, all mandatory:
 3. Never use table aliases. Always use the full table name everywhere it appears.
 4. Only use tables and columns listed in the schema below, never invent one.
 5. For text/string filter comparisons, always compare case-insensitively, e.g. use LOWER(table.column) = LOWER('value') rather than a direct equality check, since data casing may not match the casing in the question.
+6. Only JOIN two tables if a relationship between them is explicitly listed in the Relationships section below. Never join tables just because their column names look similar (e.g. two different tables both having an "id" column). If the Relationships section says "none declared", do not attempt any JOIN, only query within a single table.
 
 Available schema:
 {schema_context}
@@ -29,6 +30,7 @@ Rules, all mandatory:
 3. Never use table aliases. Always use the full table name everywhere it appears.
 4. Only use tables and columns listed in the schema below, never invent one.
 5. For text/string filter comparisons, always compare case-insensitively, e.g. use LOWER(table.column) = LOWER('value') rather than a direct equality check, since data casing may not match the casing in the question.
+6. Only JOIN two tables if a relationship between them is explicitly listed in the Relationships section below. Never join tables just because their column names look similar (e.g. two different tables both having an "id" column). If the Relationships section says "none declared", do not attempt any JOIN, only query within a single table.
 
 Available schema:
 {schema_context}
