@@ -1,0 +1,87 @@
+version: 1
+models:
+- name: customers
+  source: postgres
+  physical_name: customers
+  description: The **customers** table stores a unique identifier for each customer
+    and the human‑readable name that is shown in user interfaces.
+  synonyms:
+  - clients
+  - patrons
+  - buyers
+  - account holders
+  columns:
+  - name: id
+    physical_name: id
+    physical_type: integer
+    is_primary_key: true
+    description: A system‑generated, unique integer that serves as the primary key
+      for the customer record.
+    synonyms:
+    - customer_id
+    - key
+    - primary_key
+  - name: display_name
+    physical_name: display_name
+    physical_type: text
+    is_primary_key: false
+    description: The name displayed to users and in reports – typically the company
+      or individual’s business name.
+    synonyms:
+    - customer_name
+    - company_name
+    - client_name
+    - business_name
+- name: orders
+  source: postgres
+  physical_name: orders
+  description: The **orders** table captures each individual purchase transaction,
+    recording a unique order ID, the customer who placed it, the monetary amount,
+    and the exact date‑time when the order was made.
+  synonyms:
+  - sales
+  - purchases
+  - transactions
+  columns:
+  - name: order_id
+    physical_name: id
+    physical_type: integer
+    is_primary_key: true
+    description: A system-generated unique identifier for each order record.
+    synonyms:
+    - order number
+    - transaction id
+  - name: customer_id
+    physical_name: customer_id
+    physical_type: integer
+    is_primary_key: false
+    description: The identifier linking the order to the customer who placed it.
+    synonyms:
+    - client id
+    - buyer id
+  - name: amount
+    physical_name: amt
+    physical_type: float
+    is_primary_key: false
+    description: The total monetary value of the order, expressed in the store’s currency.
+    synonyms:
+    - total price
+    - order value
+    - transaction amount
+  - name: timestamp
+    physical_name: ts
+    physical_type: datetime
+    is_primary_key: false
+    description: The date and time when the order was created or processed.
+    synonyms:
+    - order datetime
+    - date/time
+    - created at
+relationships:
+- name: customers_id_to_orders_customer_id
+  from_model: customers
+  from_column: id
+  to_model: orders
+  to_column: customer_id
+  type: one_to_many
+  description: Each customers relates to orders
