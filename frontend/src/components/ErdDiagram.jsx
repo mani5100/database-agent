@@ -1,5 +1,6 @@
 // frontend/src/components/ErdDiagram.jsx
 
+import { useRef } from "react";
 import { RelationshipDiagram } from "react-erd";
 import "react-erd/dist/style.css";
 
@@ -81,15 +82,41 @@ function buildSchema(tables, relationships) {
   ];
 }
 
-function ErdDiagram({ tables, relationships }) {
+/*
+ * react-erd doesn't expose a click callback for a table or column node (only
+ * foreign-key create/delete callbacks). Table names render as a plain
+ * <div className="title"> and column names as <div className="column-name">,
+ * so clicks are intercepted at the container level and matched back to a
+ * table by the title rendered inside the clicked node.
+ */
+function findClickedTable(target, tables) {
+  const node = target.closest(".react-flow__node");
+  const titleEl = node ? node.querySelector(".title") : null;
+  if (!titleEl) return null;
+  return tables.find((t) => t.name === titleEl.textContent) || null;
+}
+
+function ErdDiagram({ tables, relationships, onEntityClick }) {
+  const containerRef = useRef(null);
+
   if (!tables || tables.length === 0) {
     return <div style={{ color: "var(--color-muted)" }}>No tables to display.</div>;
   }
 
   const schemas = buildSchema(tables, relationships);
 
+  function handleClick(event) {
+    if (!onEntityClick) return;
+    const table = findClickedTable(event.target, tables);
+    if (table) {
+      onEntityClick(table);
+    }
+  }
+
   return (
     <div
+      ref={containerRef}
+      onClick={handleClick}
       style={{
         height: 440,
         border: "1px solid var(--color-border)",

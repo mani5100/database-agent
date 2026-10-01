@@ -1,9 +1,14 @@
+# src/database_agent/api/routes/erd.py
+
 from pathlib import Path
 
 import yaml
 from fastapi import APIRouter, HTTPException
 
+from database_agent.models.entity_edit import EntityEditRequest, EntityEditResponse
 from database_agent.models.erd import ErdColumn, ErdRelationship, ErdResponse, ErdTable
+from database_agent.services.entity_editor import EntityEditError, update_entity
+from database_agent.services.semantic_layer_indexing import index_semantic_layer
 
 router = APIRouter()
 
@@ -24,9 +29,13 @@ async def get_erd(session_id: str) -> ErdResponse:
     tables = [
         ErdTable(
             name=model["name"],
+            physical_name=model["physical_name"],
+            description=model.get("description", ""),
             columns=[
                 ErdColumn(
                     name=col["name"],
+                    physical_name=col["physical_name"],
+                    description=col.get("description", ""),
                     is_primary_key=col.get("is_primary_key", False),
                     physical_type=col.get("physical_type", "text"),
                 )
@@ -56,3 +65,29 @@ async def get_erd(session_id: str) -> ErdResponse:
     ]
 
     return ErdResponse(tables=tables, relationships=relationships)
+
+
+@router.put("/session/{session_id}/entities/{physical_table_name}", response_model=EntityEditResponse)
+async def edit_entity(
+    session_id: str, physical_table_name: str, request: EntityEditRequest
+) -> EntityEditResponse:
+    try:
+        result = update_entity(
+            session_id=session_id,
+            physical_table_name=physical_table_name,
+            new_name=request.name,
+            new_description=request.description,
+            column_edits=[col.model_dump() for col in request.columns],
+        )
+    except EntityEditError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    await index_semantic_layer(session_id, result["models"])
+
+    return EntityEditResponse(
+        physical_name=result["physical_name"],
+        name=result["name"],
+        description=result["description"],
+        columns=result["columns"],
+        relationships_updated=result["relationships_updated"],
+    )

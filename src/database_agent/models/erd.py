@@ -3,12 +3,16 @@ from pydantic import BaseModel
 
 class ErdColumn(BaseModel):
     name: str
+    physical_name: str
+    description: str = ""
     is_primary_key: bool
     physical_type: str
 
 
 class ErdTable(BaseModel):
     name: str
+    physical_name: str
+    description: str = ""
     columns: list[ErdColumn]
 
 

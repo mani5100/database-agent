@@ -6,6 +6,7 @@ import { useSessionStore } from "../store/sessionStore";
 import { getErd } from "../api/erd";
 import ErdDiagram from "../components/ErdDiagram";
 import RelationshipsPanel from "../components/RelationshipsPanel";
+import EntityEditorPanel from "../components/EntityEditorPanel";
 
 function ReviewPage() {
   const sessionId = useSessionStore((state) => state.sessionId);
@@ -19,6 +20,7 @@ function ReviewPage() {
   const [activeTab, setActiveTab] = useState("tables");
   const [erd, setErd] = useState(null);
   const [erdError, setErdError] = useState(null);
+  const [editingTable, setEditingTable] = useState(null);
 
   const canEditRelationships = sourceType === "postgres" || sourceType === "mysql";
 
@@ -32,9 +34,14 @@ function ReviewPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadErd();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
+
+  async function handleEntitySaved() {
+    await loadErd();
+  }
 
   return (
     <div>
@@ -152,7 +159,13 @@ function ReviewPage() {
               {erdError}
             </div>
           )}
-          {erd && <ErdDiagram tables={erd.tables} relationships={erd.relationships} />}
+          {erd && (
+            <ErdDiagram
+              tables={erd.tables}
+              relationships={erd.relationships}
+              onEntityClick={(table) => setEditingTable(table)}
+            />
+          )}
           {!erd && !erdError && (
             <div style={{ color: "var(--color-muted)" }}>Loading diagram...</div>
           )}
@@ -160,6 +173,16 @@ function ReviewPage() {
             <RelationshipsPanel sessionId={sessionId} tables={erd.tables} onChange={loadErd} />
           )}
         </div>
+      )}
+
+      {editingTable && (
+        <EntityEditorPanel
+          key={editingTable.physical_name}
+          sessionId={sessionId}
+          table={editingTable}
+          onClose={() => setEditingTable(null)}
+          onSaved={handleEntitySaved}
+        />
       )}
 
       <button
