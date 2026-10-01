@@ -9,9 +9,12 @@ from qdrant_client.models import (
     PointStruct,
 )
 
-from database_agent.core.config import get_settings
 from database_agent.services.embedding_service import embed_texts
-from database_agent.sessions.qdrant_client import ensure_collection_exists, get_qdrant_client
+from database_agent.sessions.qdrant_client import (
+    ensure_collection_exists,
+    get_collection_name,
+    get_qdrant_client,
+)
 
 
 def _build_embedded_text(model: dict, column: dict) -> str:
@@ -32,13 +35,12 @@ async def index_semantic_layer(session_id: str, models: list[dict]) -> int:
 
     Returns the number of points indexed.
     """
-    settings = get_settings()
     await ensure_collection_exists()
     client = get_qdrant_client()
 
     # Clean slate for this session before inserting fresh points.
     await client.delete(
-        collection_name=settings.qdrant_collection_name,
+        collection_name=get_collection_name(),
         points_selector=Filter(
             must=[FieldCondition(key="session_id", match=MatchValue(value=session_id))]
         ),
@@ -73,7 +75,7 @@ async def index_semantic_layer(session_id: str, models: list[dict]) -> int:
         for vector, payload in zip(vectors, payloads)
     ]
 
-    await client.upsert(collection_name=settings.qdrant_collection_name, points=points)
+    await client.upsert(collection_name=get_collection_name(), points=points)
 
     return len(points)
 
@@ -84,10 +86,9 @@ async def delete_session_from_index(session_id: str) -> None:
     remain searchable (or just taking up storage) after the session
     that owns them no longer exists.
     """
-    settings = get_settings()
     client = get_qdrant_client()
     await client.delete(
-        collection_name=settings.qdrant_collection_name,
+        collection_name=get_collection_name(),
         points_selector=Filter(
             must=[FieldCondition(key="session_id", match=MatchValue(value=session_id))]
         ),

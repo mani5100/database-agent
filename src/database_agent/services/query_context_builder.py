@@ -5,21 +5,19 @@ from pathlib import Path
 import yaml
 from qdrant_client.models import FieldCondition, Filter, MatchValue
 
-from database_agent.core.config import get_settings
 from database_agent.models.query_context import ColumnMapping, QueryContext, TableMapping
 from database_agent.services.embedding_service import embed_text
-from database_agent.sessions.qdrant_client import get_qdrant_client
+from database_agent.sessions.qdrant_client import get_collection_name, get_qdrant_client
 
 _YAML_DIR = Path("backend/configs")
 
 
 async def _search_relevant_columns(session_id: str, question: str, top_k: int = 10) -> list[dict]:
-    settings = get_settings()
     client = get_qdrant_client()
     query_vector = await embed_text(question)
 
     response = await client.query_points(
-        collection_name=settings.qdrant_collection_name,
+        collection_name=get_collection_name(),
         query=query_vector,
         query_filter=Filter(
             must=[FieldCondition(key="session_id", match=MatchValue(value=session_id))]
@@ -35,11 +33,10 @@ async def _get_all_columns_for_table(session_id: str, table_business_name: str) 
     that ranked in the top_k search, since a query needs the table's full
     shape, not just the columns that happened to match the question text.
     """
-    settings = get_settings()
     client = get_qdrant_client()
 
     results, _ = await client.scroll(
-        collection_name=settings.qdrant_collection_name,
+        collection_name=get_collection_name(),
         scroll_filter=Filter(
             must=[
                 FieldCondition(key="session_id", match=MatchValue(value=session_id)),

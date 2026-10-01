@@ -1,6 +1,7 @@
 # src/database_agent/core/config.py
 
 from functools import lru_cache
+from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,11 +32,25 @@ class Settings(BaseSettings):
     ollama_model: str = "gpt-oss:latest"
 
 
+    llm_provider: Literal["ollama", "openai"] = "ollama"
+
+    # --- OpenAI (fallback chat model, used when Ollama fails) ---
+    # Leave openai_api_key empty to disable the fallback.
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
+    llm_request_timeout_seconds: float = 120
+
+
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection_name: str = "semantic_layer_columns"
 
-    # --- Ollama embeddings ---
+    # --- Embeddings ---
+    # "ollama" or "openai". Each provider indexes into its own Qdrant
+    # collection (vector sizes differ), so after switching, semantic layers
+    # must be re-generated to be searchable.
+    embedding_provider: Literal["ollama", "openai"] = "ollama"
     ollama_embedding_model: str = "nomic-embed-text:latest"
+    openai_embedding_model: str = "text-embedding-3-small"
     
     
     # --- Google OAuth (private Google Sheets access) ---

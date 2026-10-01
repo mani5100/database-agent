@@ -1,0 +1,84 @@
+version: 1
+models:
+- name: customers
+  source: postgres
+  physical_name: customers
+  description: The customers table contains information about the various customers,
+    including their unique identifiers and display names.
+  synonyms:
+  - client list
+  - customer database
+  - client records
+  columns:
+  - name: id
+    physical_name: id
+    physical_type: integer
+    is_primary_key: true
+    description: A unique identifier for each customer in the database.
+    synonyms:
+    - customer ID
+    - identifier
+    - unique ID
+  - name: display_name
+    physical_name: display_name
+    physical_type: text
+    is_primary_key: false
+    description: The name used to represent the customer in user interfaces and reports.
+    synonyms:
+    - customer name
+    - business name
+    - client name
+- name: orders
+  source: postgres
+  physical_name: orders
+  description: The orders table contains records of customer purchases, detailing
+    the amount spent and the time of each transaction.
+  synonyms:
+  - purchase records
+  - transaction logs
+  - sales orders
+  columns:
+  - name: order_id
+    physical_name: id
+    physical_type: integer
+    is_primary_key: true
+    description: A unique identifier for each order in the table.
+    synonyms:
+    - order number
+    - transaction ID
+    - order reference
+  - name: customer_id
+    physical_name: customer_id
+    physical_type: integer
+    is_primary_key: false
+    description: A unique identifier for the customer who placed the order.
+    synonyms:
+    - client ID
+    - buyer ID
+    - customer reference
+  - name: amount
+    physical_name: amt
+    physical_type: float
+    is_primary_key: false
+    description: The total monetary value of the order.
+    synonyms:
+    - total cost
+    - order value
+    - purchase amount
+  - name: timestamp
+    physical_name: ts
+    physical_type: datetime
+    is_primary_key: false
+    description: The date and time when the order was placed.
+    synonyms:
+    - order date
+    - transaction time
+    - date of purchase
+relationships:
+- name: orders_to_customers
+  from_model: orders
+  from_column: customer_id
+  to_model: customers
+  to_column: id
+  type: many_to_one
+  description: Each orders belongs to one customers

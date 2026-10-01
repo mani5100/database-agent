@@ -19,6 +19,7 @@ A natural-language database analyst: connect a Postgres/MySQL database, CSV, Exc
 ## Tech Stack
 
 **Backend**
+
 - Python 3.11, [FastAPI](https://fastapi.tiangolo.com/), [Uvicorn](https://www.uvicorn.org/)
 - [LangGraph](https://github.com/langchain-ai/langgraph) + [LangGraph Postgres checkpointer](https://pypi.org/project/langgraph-checkpoint-postgres/) for the agent state machine
 - [LangChain Ollama](https://python.langchain.com/) for local LLM calls and embeddings
@@ -33,12 +34,14 @@ A natural-language database analyst: connect a Postgres/MySQL database, CSV, Exc
 - [uv](https://docs.astral.sh/uv/) for dependency management and packaging
 
 **Frontend**
+
 - [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
 - [Zustand](https://github.com/pmndrs/zustand) for state management
 - [Recharts](https://recharts.org/) for charts, [react-erd](https://www.npmjs.com/package/react-erd) for ERD rendering, [react-markdown](https://github.com/remarkjs/react-markdown) for answer rendering
 - ESLint for linting
 
 **Infrastructure**
+
 - Docker / Docker Compose (backend, frontend, Redis, Qdrant, checkpoint Postgres)
 - Nginx (serves the built frontend in production)
 
@@ -94,12 +97,12 @@ docker compose up --build
 
 This builds and starts the backend, frontend (Nginx), Redis, Qdrant, and the checkpoint Postgres database together.
 
-| Service | Port |
-|---|---|
-| Backend (FastAPI) | `8000` |
-| Frontend (Nginx) | `5173` |
-| Redis | `6379` |
-| Qdrant | `6333` |
+| Service             | Port     |
+| ------------------- | -------- |
+| Backend (FastAPI)   | `8000` |
+| Frontend (Nginx)    | `5173` |
+| Redis               | `6379` |
+| Qdrant              | `6333` |
 | Checkpoint Postgres | `5434` |
 
 ## Configuration
@@ -127,7 +130,18 @@ CONNECTION_TIMEOUT_SECONDS=10
 # --- Ollama (LLM + embeddings) ---
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=gpt-oss:latest
+# Embeddings: ollama | openai (no fallback; re-generate semantic layers after switching)
+EMBEDDING_PROVIDER=ollama
 OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+
+# --- Chat model selection: ollama | openai (the other one is the fallback) ---
+LLM_PROVIDER=ollama
+
+# --- OpenAI (fallback chat model when Ollama fails; leave key empty to disable) ---
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4o-mini
+LLM_REQUEST_TIMEOUT_SECONDS=120
 
 # --- Qdrant (semantic column index) ---
 QDRANT_URL=http://localhost:6333

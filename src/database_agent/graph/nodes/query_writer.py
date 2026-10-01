@@ -1,9 +1,8 @@
 # src/database_agent/graph/nodes/query_writer.py
 
-from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
 
-from database_agent.core.config import get_settings
+from database_agent.core.llm import get_structured_llm
 from database_agent.graph.prompts import QUERY_RETRY_PROMPT, QUERY_WRITER_PROMPT
 from database_agent.graph.state import AgentState
 from database_agent.models.query_context import QueryContext
@@ -12,14 +11,6 @@ from database_agent.models.query_context import QueryContext
 class SQLWriteResponse(BaseModel):
     sql: str = Field(description="The SQL query, written using business names, fully qualified columns, no table aliases")
 
-
-def _get_llm() -> ChatOllama:
-    settings = get_settings()
-    return ChatOllama(
-        model=settings.ollama_model,
-        base_url=settings.ollama_base_url,
-        temperature=0,
-    )
 
 def _format_history(history: list[dict]) -> str:
     if not history:
@@ -52,7 +43,7 @@ def _format_context(context: QueryContext) -> str:
 
 async def query_writer_node(state: AgentState) -> dict:
     schema_context = _format_context(state["query_context"])
-    llm = _get_llm().with_structured_output(SQLWriteResponse)
+    llm = get_structured_llm(SQLWriteResponse)
 
     conversation_history = _format_history(state.get("conversation_history", []))
 

@@ -3,10 +3,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
 
-from database_agent.core.config import get_settings
+from database_agent.core.llm import get_structured_llm
 from database_agent.graph.prompts import CHART_DECIDER_PROMPT
 from database_agent.graph.state import AgentState
 
@@ -22,15 +21,6 @@ class ChartCandidate(BaseModel):
 
 class ChartDecisionResponse(BaseModel):
     candidates: list[ChartCandidate]
-
-
-def _get_llm() -> ChatOllama:
-    settings = get_settings()
-    return ChatOllama(
-        model=settings.ollama_model,
-        base_url=settings.ollama_base_url,
-        temperature=0,
-    )
 
 
 def _is_numeric(value) -> bool:
@@ -49,7 +39,7 @@ async def chart_decider_node(state: AgentState) -> dict:
     columns = list(rows[0].keys())
     logger.info("chart_decider: %d rows, columns=%s", len(rows), columns)
 
-    llm = _get_llm().with_structured_output(ChartDecisionResponse)
+    llm = get_structured_llm(ChartDecisionResponse)
     chain = CHART_DECIDER_PROMPT | llm
 
     response: ChartDecisionResponse = await chain.ainvoke(

@@ -4,8 +4,7 @@ from guardrails import Guard
 from guardrails.validators import Validator, register_validator, PassResult, FailResult
 from pydantic import BaseModel, Field
 
-from database_agent.core.config import get_settings
-from langchain_ollama import ChatOllama
+from database_agent.core.llm import get_structured_llm
 
 
 class InjectionCheck(BaseModel):
@@ -16,15 +15,10 @@ class InjectionCheck(BaseModel):
     reason: str = Field(description="Brief reason for the classification")
 
 
-def _get_llm() -> ChatOllama:
-    settings = get_settings()
-    return ChatOllama(model=settings.ollama_model, base_url=settings.ollama_base_url, temperature=0)
-
-
 @register_validator(name="ollama-injection-check", data_type="string")
 class OllamaInjectionCheck(Validator):
     def validate(self, value: str, metadata: dict) -> PassResult | FailResult:
-        llm = _get_llm().with_structured_output(InjectionCheck)
+        llm = get_structured_llm(InjectionCheck)
         result: InjectionCheck = llm.invoke(
             f"Classify this question asked to a database query assistant.\n"
             f"Question: {value}\n\n"

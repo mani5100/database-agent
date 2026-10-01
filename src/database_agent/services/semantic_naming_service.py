@@ -1,9 +1,8 @@
 # src/database_agent/services/semantic_naming_service.py
 
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import ChatOllama
 
-from database_agent.core.config import get_settings
+from database_agent.core.llm import get_structured_llm
 from database_agent.models.semantic_layer import (
     ColumnDetail,
     TableDetailResponse,
@@ -15,15 +14,6 @@ from database_agent.services.name_sanitizer import sanitize_and_deduplicate
 class NamingValidationError(Exception):
     """Raised when the LLM's response doesn't match the input tables/columns exactly."""
     pass
-
-
-def _get_llm() -> ChatOllama:
-    settings = get_settings()
-    return ChatOllama(
-        model=settings.ollama_model,
-        base_url=settings.ollama_base_url,
-        temperature=0,
-    )
 
 
 # --- Phase 1: table naming ---
@@ -63,7 +53,7 @@ async def generate_table_names(
         for physical_name, sample_rows in tables_with_samples
     )
 
-    chain = _TABLE_NAMING_PROMPT | _get_llm().with_structured_output(TableNamingResponse)
+    chain = _TABLE_NAMING_PROMPT | get_structured_llm(TableNamingResponse)
     response: TableNamingResponse = await chain.ainvoke({"tables_block": tables_block})
 
     returned_names = {t.physical_name for t in response.tables}
@@ -129,7 +119,7 @@ async def generate_table_details(
         f"Sample rows: {sample_rows}"
     )
 
-    chain = _TABLE_DETAIL_PROMPT | _get_llm().with_structured_output(TableDetailResponse)
+    chain = _TABLE_DETAIL_PROMPT | get_structured_llm(TableDetailResponse)
     response: TableDetailResponse = await chain.ainvoke({"table_block": table_block})
 
     returned_columns = {c.physical_name for c in response.columns}
